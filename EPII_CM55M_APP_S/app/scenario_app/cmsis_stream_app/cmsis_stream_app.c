@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "powermode_export.h"
+#include "python_config.h"
 
 #define WATCH_DOG_TIMEOUT_TH	(500) //ms
 #define WE2_CHIP_VERSION_C		0x8538000c
@@ -600,7 +601,7 @@ void app_start_state(APP_STATE_E state)
 		if (state == APP_STATE_ALLON_FD_FM)
 		{
 			//if(cisdp_dp_init(true, SENSORDPLIB_PATH_INT_INP_HW5X5_JPEG, dp_app_cv_fd_fm_eventhdl_cb, 4, APP_DP_RES_YUV640x480_INP_SUBSAMPLE_2X) < 0)// YUV 640X480
-			if(cisdp_dp_init(true, SENSORDPLIB_PATH_INT_INP_HW5X5_JPEG, dp_app_cv_fd_fm_eventhdl_cb, 4, APP_DP_RES_YUV640x480_INP_SUBSAMPLE_2X) < 0)// YUV 640X480
+			if(cisdp_dp_init(true, SENSORDPLIB_PATH_INT_INP_HW5X5_JPEG, dp_app_cv_fd_fm_eventhdl_cb, 4, CAMERA_FORMAT) < 0)// YUV 640X480
 
 			//if(cisdp_dp_init(true, SENSORDPLIB_PATH_INP_HW5x5, dp_app_cv_fd_fm_eventhdl_cb, 4, APP_DP_RES_RGB640x480_INP_SUBSAMPLE_4X) < 0)// RGB 320x240
 			{
@@ -618,7 +619,7 @@ void app_start_state(APP_STATE_E state)
 	{
 		if(state == APP_STATE_ALLON_FD_FM) {
 			//if wdma variable is zero when not init yet, then this step is a must be to retrieve wdma address
-			if(cisdp_dp_init(true, SENSORDPLIB_PATH_INT_INP_HW5X5_JPEG, dp_app_cv_fd_fm_eventhdl_cb, 4, APP_DP_RES_YUV640x480_INP_SUBSAMPLE_1X) < 0)// YUV 640X480
+			if(cisdp_dp_init(true, SENSORDPLIB_PATH_INT_INP_HW5X5_JPEG, dp_app_cv_fd_fm_eventhdl_cb, 4, CAMERA_FORMAT) < 0)// YUV 640X480
 			{
 				xprintf("\r\nDATAPATH Init fail\r\n");
 				APP_BLOCK_FUNC();
@@ -633,7 +634,7 @@ void app_start_state(APP_STATE_E state)
 #else//if no UART_SEND_ALOGO_RESEULT
 	if(state == APP_STATE_ALLON_FD_FM) {
         //if wdma variable is zero when not init yet, then this step is a must be to retrieve wdma address
-		if(cisdp_dp_init(true, SENSORDPLIB_PATH_INT_INP_HW5X5_JPEG, dp_app_cv_fd_fm_eventhdl_cb, 4, APP_DP_RES_YUV640x480_INP_SUBSAMPLE_1X) < 0)// YUV 640X480
+		if(cisdp_dp_init(true, SENSORDPLIB_PATH_INT_INP_HW5X5_JPEG, dp_app_cv_fd_fm_eventhdl_cb, 4, CAMERA_FORMAT) < 0)// YUV 640X480
         {
         	xprintf("\r\nDATAPATH Init fail\r\n");
         	APP_BLOCK_FUNC();

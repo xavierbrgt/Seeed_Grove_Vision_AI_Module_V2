@@ -46,22 +46,28 @@ The template has two arguments:
 - The number of consumed sample on this input : inputSize
 
 */
-template<typename INJ, int inputSizeJ>
-class SendResult: public GenericSink<INJ, inputSizeJ>
+template<typename IN, int inputSize>
+class SendResult: public GenericSink<IN, inputSize>
 {
 public:
     // The constructor for the sink is only using
     // the input FIFO (coming from the generated scheduler).
     // This FIFO is passed to the GenericSink contructor.
     // Implementation of this Sink constructor is doing nothing
-    SendResult(FIFOBase<INJ> &src,
+    SendResult(FIFOBase<IN> &src,
         stream_env_t *env,
         struct_algoResult *alg_result,
-        struct_fm_algoResult_with_fps *alg_fm_result):
-       GenericSink<INJ,inputSizeJ>(src),
+        struct_fm_algoResult_with_fps *alg_fm_result,
+        int sendJPEG,
+        int width, 
+        int height):
+       GenericSink<IN,inputSize>(src),
        m_env(env),
        m_alg_result(alg_result),
-       m_alg_fm_result(alg_fm_result){};
+       m_alg_fm_result(alg_fm_result),
+       mSendJpeg(sendJPEG),
+       mWidth(width),
+       mHeight(height){};
 
     // Used in asynchronous mode. In case of underflow on
     // the input, the execution of this node will be skipped
@@ -78,17 +84,26 @@ public:
    
     int run() final
     {
-        INJ *b=this->getReadBuffer();
+        IN *b=this->getReadBuffer();
 
         SystemGetTick(&m_env->systick_2, &m_env->loop_cnt_2);
         uint32_t algo_tick = (m_env->loop_cnt_2-m_env->loop_cnt_1)*CPU_CLK+(m_env->systick_1-m_env->systick_2);              
         algo_tick += m_env->capture_image_tick;   
 
         el_img_t temp_el_jpg_img = el_img_t{};
-        temp_el_jpg_img.data = (uint8_t*)b;
-        temp_el_jpg_img.size = app_get_jpeg_sz();
-        temp_el_jpg_img.width = app_get_raw_width();
-        temp_el_jpg_img.height = app_get_raw_height();
+        if (mSendJpeg)
+        {
+           temp_el_jpg_img.data = (uint8_t*)app_get_jpeg_addr();
+           temp_el_jpg_img.size = app_get_jpeg_sz();
+           temp_el_jpg_img.width = app_get_raw_width();
+           temp_el_jpg_img.height = app_get_raw_height();
+        }
+        else
+        {
+           temp_el_jpg_img.data = (uint8_t*)b;
+           temp_el_jpg_img.size = inputSize;
+        }
+        
         temp_el_jpg_img.format = EL_PIXEL_FORMAT_JPEG;
         temp_el_jpg_img.rotate = EL_PIXEL_ROTATE_0;
 
@@ -149,8 +164,14 @@ public:
         }
 
         send_device_id();
-        event_reply(concat_strings(", ", fm_face_bbox_results_2_json_str(el_fm_face_bbox_algo),", ", algo_tick_2_json_str(algo_tick),", ", fm_point_results_2_json_str(el_fm_point_algo), ", ", img_2_json_str(&temp_el_jpg_img)));
-        
+        if (mSendJpeg)
+        {
+           event_reply(concat_strings(", ", fm_face_bbox_results_2_json_str(el_fm_face_bbox_algo),", ", algo_tick_2_json_str(algo_tick),", ", fm_point_results_2_json_str(el_fm_point_algo), ", ", img_2_json_str(&temp_el_jpg_img)));
+        }
+        else
+        {
+           event_reply(concat_strings(", ", fm_face_bbox_results_2_json_str(el_fm_face_bbox_algo),", ", algo_tick_2_json_str(algo_tick),", ", fm_point_results_2_json_str(el_fm_point_algo), ", ", rgb_img_2_json_str(&temp_el_jpg_img)));
+        }
         return(0);
     };
 
@@ -158,80 +179,17 @@ protected:
     stream_env_t *m_env;
     struct_algoResult *m_alg_result;
     struct_fm_algoResult_with_fps *m_alg_fm_result;
+    int mSendJpeg;
+    int mWidth;
+    int mHeight;
 };
 
-template<typename INJ, int inputSizeJ>
-class RGB888Sink: public GenericSink<INJ, inputSizeJ>
-{
-public:
-    // The constructor for the sink is only using
-    // the input FIFO (coming from the generated scheduler).
-    // This FIFO is passed to the GenericSink contructor.
-    // Implementation of this Sink constructor is doing nothing
-    RGB888Sink(FIFOBase<INJ> &src,
-        stream_env_t *env,int w,int h):
-       GenericSink<INJ,inputSizeJ>(src),m_env(env),mW(w),mH(h){};
-
-    // Used in asynchronous mode. In case of underflow on
-    // the input, the execution of this node will be skipped
-    int prepareForRunning() final
-    {
-        if (this->willUnderflow())
-        {
-           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
-        }
-
-        return(0);
-    };
-
-   
-    int run() final
-    {
-        INJ *b=this->getReadBuffer();
-
-        SystemGetTick(&m_env->systick_2, &m_env->loop_cnt_2);
-        uint32_t algo_tick = (m_env->loop_cnt_2-m_env->loop_cnt_1)*CPU_CLK+(m_env->systick_1-m_env->systick_2);              
-        algo_tick += m_env->capture_image_tick;   
-
-        el_img_t temp_el_jpg_img = el_img_t{};
-        temp_el_jpg_img.data = (uint8_t*)b;
-        temp_el_jpg_img.size = inputSizeJ*sizeof(INJ);
-        temp_el_jpg_img.width = mW;
-        temp_el_jpg_img.height = mH;
-        temp_el_jpg_img.format = EL_PIXEL_FORMAT_RGB888;
-        temp_el_jpg_img.rotate = EL_PIXEL_ROTATE_0;
-
-       
-
-        send_device_id();
-        //event_reply(concat_strings(", ", algo_tick_2_json_str(algo_tick), ", ", rgb_img_2_json_str(&temp_el_jpg_img)));
-        event_reply(concat_strings(", ", algo_tick_2_json_str(algo_tick)));
-        
-        return(0);
-    };
-
-protected:
-    stream_env_t *m_env;
-    int mW,mH;
-};
-
-/*
-
-Source template.
-It is very similar to the Sink but inputs have been
-replaced by outputs.
-
-*/
 
 template<typename OUT,int outputSize>
-class Camera;
-
-template<>
-class Camera<uint32_t,1>: 
-public GenericSource<uint32_t,1>
+class Camera:public GenericSource<OUT,outputSize>
 {
 public:
-    Camera(FIFOBase<uint32_t> &dst):GenericSource<uint32_t,1>(dst){};
+    Camera(FIFOBase<OUT> &dst):GenericSource<OUT,outputSize>(dst){};
 
     int prepareForRunning() final
     {
@@ -244,10 +202,9 @@ public:
     };
 
     int run() final{
-        //SCB_InvalidateDCache();
         invalidate_cache_for_camera();
 
-        uint32_t *res=this->getWriteBuffer();
+        OUT *res=this->getWriteBuffer();
         (void)res;
         
         return(0);
@@ -256,155 +213,6 @@ public:
 };
 
 
-/* 
-
-Definition of the Generic ProcessingNode template
-defining one input and one output.
-The generic template is not implemented.
-Instead, a specialized implementation is provided after.
-
-*/
-template<typename IN, int inputSize,
-         typename OUT,int outputSize>
-class JPEGImage;
-
-
-
-template<typename OUT, int outputSize>
-class JPEGImage<uint32_t,1,OUT,outputSize>: 
-      public GenericNode<uint32_t,1,OUT,outputSize>
-{
-public:
-    /* Constructor needs the input and output FIFOs */
-    JPEGImage(FIFOBase<uint32_t> &src,
-              FIFOBase<OUT> &dst):GenericNode<uint32_t,1,
-                                              OUT,outputSize>(src,dst){};
-
-    /* In asynchronous mode, node execution will be 
-       skipped in case of underflow on the input 
-       or overflow in the output.
-    */
-    int prepareForRunning() final
-    {
-        if (this->willOverflow() ||
-            this->willUnderflow())
-        {
-           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
-        }
-
-        return(0);
-    };
-    
-    /* 
-       Node processing
-       1 is added to the input
-    */
-    int run() final{
-        uint32_t *a=this->getReadBuffer();
-        OUT *b=this->getWriteBuffer();
-
-        (void)a;
-        (void)b;
-        
-        return(0);
-    };
-
-};
-
-
-template<typename IN, int inputSize,
-         typename OUT,int outputSize>
-class RawYUVImage;
-
-
-
-template<typename OUT, int outputSize>
-class RawYUVImage<uint32_t,1,OUT,outputSize>: 
-      public GenericNode<uint32_t,1,OUT,outputSize>
-{
-public:
-    /* Constructor needs the input and output FIFOs */
-    RawYUVImage(FIFOBase<uint32_t> &src,
-              FIFOBase<OUT> &dst):GenericNode<uint32_t,1,
-                                              OUT,outputSize>(src,dst){};
-
-    /* In asynchronous mode, node execution will be 
-       skipped in case of underflow on the input 
-       or overflow in the output.
-    */
-    int prepareForRunning() final
-    {
-        if (this->willOverflow() ||
-            this->willUnderflow())
-        {
-           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
-        }
-
-        return(0);
-    };
-    
-    /* 
-       Node processing
-       1 is added to the input
-    */
-    int run() final{
-        uint32_t *a=this->getReadBuffer();
-        OUT *b=this->getWriteBuffer();
-
-        (void)a;
-        (void)b;
-        
-        return(0);
-    };
-
-};
-
-template<typename IN, int inputSize,
-         typename OUT,int outputSize>
-class RawRGBImage;
-
-
-
-template<typename OUT, int outputSize>
-class RawRGBImage<uint32_t,1,OUT,outputSize>: 
-      public GenericNode<uint32_t,1,OUT,outputSize>
-{
-public:
-    /* Constructor needs the input and output FIFOs */
-    RawRGBImage(FIFOBase<uint32_t> &src,
-              FIFOBase<OUT> &dst):GenericNode<uint32_t,1,
-                                              OUT,outputSize>(src,dst){};
-
-    /* In asynchronous mode, node execution will be 
-       skipped in case of underflow on the input 
-       or overflow in the output.
-    */
-    int prepareForRunning() final
-    {
-        if (this->willOverflow() ||
-            this->willUnderflow())
-        {
-           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
-        }
-
-        return(0);
-    };
-    
-    /* 
-       Node processing
-       1 is added to the input
-    */
-    int run() final{
-        uint32_t *a=this->getReadBuffer();
-        OUT *b=this->getWriteBuffer();
-
-        (void)a;
-        (void)b;
-        
-        return(0);
-    };
-
-};
 
 
 #endif

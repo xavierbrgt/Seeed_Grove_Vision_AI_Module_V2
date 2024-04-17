@@ -7,8 +7,8 @@ from nodes import *
 
 # Define the datatype we are using for all the IOs in this
 # example
-floatType=CType(F32)
 
+CAMERA_FORMAT = Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_2X
 
 CROP_IMAGE_WIDTH = 640
 CROP_IMAGE_HEIGHT = 480
@@ -23,17 +23,15 @@ FM_INPUT_TENSOR_HEIGHT = 192
 IL_INPUT_TENSOR_WIDTH = 64
 IL_INPUT_TENSOR_HEIGHT = 64
 
-camera=Camera("ov5647")
-jpeg=JPEGImage("jpeg",OUT_IMAGE_WIDTH,OUT_IMAGE_HEIGHT)
-sink=SendResult("sink",OUT_IMAGE_WIDTH,OUT_IMAGE_HEIGHT)
+camera=Camera("ov5647",mode=CAMERA_FORMAT)
+image_t = camera.image_type
+
+sink=SendResult("sink",image_t)
 
 # Create a Graph object
 the_graph = Graph()
 
 # Connect the source to the processing node
-the_graph.connect(camera.o,jpeg.i)
-the_graph.connect(jpeg.o,sink.j,buffer="(void*)app_get_jpeg_addr()")
+the_graph.connect(camera.o,sink.i,buffer="(void*)app_get_raw_addr()")
 
 
-#the_graph.connect(camera.o,raw.i)
-#the_graph.connect(raw.o,sink.r,buffer="(void*)app_get_raw_addr()")

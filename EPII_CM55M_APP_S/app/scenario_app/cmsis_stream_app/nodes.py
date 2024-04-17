@@ -1,149 +1,190 @@
 # Include definitions from the Python package
-from cmsis_stream.cg.scheduler import SINT8,UINT32,CType,CStructType,GenericNode,GenericSink,GenericSource
+from cmsis_stream.cg.scheduler import CGStaticType,SINT8,UINT32,CType,CStructType,GenericNode,GenericSink,GenericSource
 
-tfType = CStructType("TfLiteTensor",10)
-posType = CStructType("struct_position",8)
+from html import escape
 
-bufferType = CType(SINT8)
-activateType = CType(UINT32)
 
-### Define new types of Nodes 
+#tfType = CStructType("TfLiteTensor",10)
+#posType = CStructType("struct_position",8)
 
-class TFNode11(GenericNode):
-    def __init__(self,name):
-        GenericNode.__init__(self,name)
-        self.addInput("i",bufferType,1)
-        self.addOutput("o",bufferType,1)
+#bufferType = CType(SINT8)
+#activateType = CType(UINT32)
 
-    @property
-    def typeName(self):
-        """The name of the C++ class implementing this node"""
-        return "TFNode11"
+class CImageType(CGStaticType):
+    YUV = 1
+    RGB = 2
 
-class TFNode12(GenericNode):
-    def __init__(self,name):
-        GenericNode.__init__(self,name)
-        self.addInput("i",bufferType,1)
-        self.addOutput("oa",bufferType,1)
-        self.addOutput("ob",bufferType,1)
+    def __init__(self,w,h,t=YUV):
+        CGStaticType.__init__(self)
+        self._w = w 
+        self._h = h
+        self._pixel_type = t
 
-    @property
-    def typeName(self):
-        """The name of the C++ class implementing this node"""
-        return "TFNode12"
-
-class YoloPostProcess(GenericNode):
-    def __init__(self,name):
-        GenericNode.__init__(self,name)
-        self.addInput("ia",bufferType,1)
-        self.addInput("ib",bufferType,1)
-        self.addOutput("o",activateType,1)
+    def __eq__(self, other):
+      return(CGStaticType.__eq__(self,other) and 
+             self._w == other._w and
+             self._h == other._h and
+             self._pixel_type == other._pixel_type)
 
     @property
-    def typeName(self):
-        """The name of the C++ class implementing this node"""
-        return "YoloPostProcess"
-
-class CropCamera(GenericNode):
-    def __init__(self,name,nb):
-        GenericNode.__init__(self,name)
-        self.addInput("s",activateType,1)
-        self.addOutput("o",bufferType,nb)
+    def width(self):
+        return self._w
 
     @property
-    def typeName(self):
-        """The name of the C++ class implementing this node"""
-        return "CropCamera"
-
-class PadImage(GenericNode):
-    def __init__(self,name,nba,nbb):
-        GenericNode.__init__(self,name)
-        self.addInput("i",bufferType,nba)
-        self.addOutput("o",bufferType,nbb)
+    def height(self):
+        return self._h
 
     @property
-    def typeName(self):
-        """The name of the C++ class implementing this node"""
-        return "PadImage"
-
-class ResizeImage(GenericNode):
-    def __init__(self,name,nba,nbb):
-        GenericNode.__init__(self,name)
-        self.addInput("i",bufferType,nba)
-        self.addOutput("o",bufferType,nbb)
+    def format(self):
+        return self._pixel_type
+    
+    
+    
+    @property
+    def bytes(self):
+        # The C code is using array of int8
+        # This type is just used at Python / Graphviz level
+        return 1
+        #if self._pixel_type == CImageType.YUV:
+        #   return(int(1.5*self._w*self._h))
+        #if self._pixel_type == CImageType.RGB:
+        #   return(int(3*self._w*self._h))
+        # 
+          
+    @property
+    def _nb_bytes(self):
+        if self._pixel_type == CImageType.YUV:
+           return(int(1.5*self._w*self._h))
+        if self._pixel_type == CImageType.RGB:
+           return(int(3*self._w*self._h))
 
     @property
-    def typeName(self):
-        """The name of the C++ class implementing this node"""
-        return "ResizeImage"
-
-class CropImage(GenericNode):
-    def __init__(self,name,nba,nbb):
-        GenericNode.__init__(self,name)
-        self.addInput("i",bufferType,nba)
-        self.addOutput("o",bufferType,nbb)
+    def ctype(self):
+        return(CType(SINT8).ctype)
 
     @property
-    def typeName(self):
-        """The name of the C++ class implementing this node"""
-        return "CropImage"
+    def graphViztype(self):
+        if self.format == CImageType.YUV:
+           return(escape(f"YUV_{self.width}_{self.height}"))
+        if self.format == CImageType.RGB:
+           return(escape(f"RGB_{self.width}_{self.height}"))
 
-class YYYY(GenericNode):
-    def __init__(self,name,nba):
-        GenericNode.__init__(self,name)
-        self.addInput("i",bufferType,nba)
-        self.addOutput("o",bufferType,3*nbb)
-
-    @property
-    def typeName(self):
-        """The name of the C++ class implementing this node"""
-        return "Y_to_YYY"
-
-class FaceMeshProcess(GenericNode):
-    def __init__(self,name):
-        GenericNode.__init__(self,name)
-        self.addInput("ia",bufferType,1)
-        self.addInput("ib",bufferType,1)
-
-        self.addInput("ea",posType,16)
-        self.addInput("eb",posType,16)
-        self.addOutput("o",activateType,1)
-
-    @property
-    def typeName(self):
-        """The name of the C++ class implementing this node"""
-        return "FaceMeshProcess"
 
 class SendResult(GenericSink):
-    def __init__(self,name,w,h):
+    def __init__(self,name,img_t,jpeg=True):
         GenericSink.__init__(self,name)
-        self.addInput("j",bufferType,w*h)
+        self.addInput("i",img_t,img_t._nb_bytes)
         self.addVariableArg("env")
         self.addVariableArg("alg_result")
         self.addVariableArg("alg_fm_result")
+        if jpeg:
+            self.addLiteralArg(1)
+        else:
+            self.addLiteralArg(0)
+        self.addLiteralArg(img_t.width)
+        self.addLiteralArg(img_t.height)
         
     @property
     def typeName(self):
         """The name of the C++ class implementing this node"""
         return "SendResult"
 
-class RGB888Sink(GenericSink):
-    def __init__(self,name,w,h):
-        GenericSink.__init__(self,name)
-        self.addInput("r",bufferType,w*h*3)
-        self.addVariableArg("env")
-        self.addLiteralArg(w)
-        self.addLiteralArg(h)
-        
-    @property
-    def typeName(self):
-        """The name of the C++ class implementing this node"""
-        return "RGB888Sink"
+
 
 class Camera(GenericSource):
-    def __init__(self,name):
+    APP_DP_RES_RGB640x480_INP_SUBSAMPLE_1X = 1
+    APP_DP_RES_RGB640x480_INP_SUBSAMPLE_2X = 2
+    APP_DP_RES_RGB640x480_INP_SUBSAMPLE_4X = 3
+    APP_DP_RES_YUV640x480_INP_SUBSAMPLE_1X = 4
+    APP_DP_RES_YUV640x480_INP_SUBSAMPLE_2X = 5
+    APP_DP_RES_YUV640x480_INP_SUBSAMPLE_4X = 6
+
+    @property 
+    def nb_bytes(self):
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_1X:
+           return 921600 # 640*480*3
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_2X:
+           return 230400 # 320*240*3
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_4X:
+           return 57600 # 160*120*3
+
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_1X:
+           return 460800 # 640*480*1.5
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_2X:
+           return 115200 # 320*240*1.5
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_4X:
+           return 28800 # 160*120*1.5
+
+    @property
+    def width(self):
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_1X:
+           return 640
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_2X:
+           return 320
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_4X:
+           return 160
+
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_1X:
+           return 640
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_2X:
+           return 320
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_4X:
+           return 160
+
+    @property
+    def height(self):
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_1X:
+           return 480
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_2X:
+           return 240
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_4X:
+           return 120
+
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_1X:
+           return 480
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_2X:
+           return 240
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_4X:
+           return 120
+    
+    @property
+    def image_type(self):
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_1X:
+           return CImageType(self.width,self.height,CImageType.RGB)
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_2X:
+           return CImageType(self.width,self.height,CImageType.RGB)
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_4X:
+           return CImageType(self.width,self.height,CImageType.RGB)
+
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_1X:
+           return CImageType(self.width,self.height,CImageType.YUV)
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_2X:
+           return CImageType(self.width,self.height,CImageType.YUV)
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_4X:
+           return CImageType(self.width,self.height,CImageType.YUV)
+
+    @property
+    def camera_define(self):
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_1X:
+           return "APP_DP_RES_RGB640x480_INP_SUBSAMPLE_1X"
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_2X:
+           return "APP_DP_RES_RGB640x480_INP_SUBSAMPLE_2X"
+        if self._mode == Camera.APP_DP_RES_RGB640x480_INP_SUBSAMPLE_4X:
+           return "APP_DP_RES_RGB640x480_INP_SUBSAMPLE_4X"
+
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_1X:
+           return "APP_DP_RES_YUV640x480_INP_SUBSAMPLE_1X"
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_2X:
+           return "APP_DP_RES_YUV640x480_INP_SUBSAMPLE_2X"
+        if self._mode == Camera.APP_DP_RES_YUV640x480_INP_SUBSAMPLE_4X:
+           return "APP_DP_RES_YUV640x480_INP_SUBSAMPLE_4X"
+    
+    def __init__(self,name,mode=APP_DP_RES_YUV640x480_INP_SUBSAMPLE_2X):
         GenericSource.__init__(self,name)
-        self.addOutput("o",activateType,1)
+        self._mode = mode
+        img_t = self.image_type
+        self.addOutput("o",img_t,img_t._nb_bytes)
+
 
     @property
     def typeName(self):
@@ -151,49 +192,3 @@ class Camera(GenericSource):
         return "Camera"
 
 
-class RawYUVImage(GenericNode):
-    def __init__(self,name,w,h):
-        GenericSource.__init__(self,name)
-        self.addInput("i",activateType,1)
-        self.addOutput("o",bufferType,w*h*3)
-
-    @property
-    def typeName(self):
-        """The name of the C++ class implementing this node"""
-        return "RawYUVImage"
-
-class RawRGBImage(GenericNode):
-    def __init__(self,name,w,h):
-        GenericSource.__init__(self,name)
-        self.addInput("i",activateType,1)
-        self.addOutput("o",bufferType,w*h*3)
-
-    @property
-    def typeName(self):
-        """The name of the C++ class implementing this node"""
-        return "RawRGBImage"
-
-class JPEGImage(GenericNode):
-    def __init__(self,name,w,h):
-        GenericSource.__init__(self,name)
-        self.addInput("i",activateType,1)
-        self.addOutput("o",bufferType,w*h)
-
-    @property
-    def typeName(self):
-        """The name of the C++ class implementing this node"""
-        return "JPEGImage"
-
-class YUVToRGB(GenericNode):
-    def __init__(self,name,w,h,scale):
-        GenericNode.__init__(self,name)
-        self.addInput("i",bufferType,w*h*3)
-        self.addOutput("o",bufferType,(w//scale)*(h//scale)*4)
-        self.addLiteralArg(w)
-        self.addLiteralArg(h)
-        self.addLiteralArg(scale)
-
-    @property
-    def typeName(self):
-        """The name of the C++ class implementing this node"""
-        return "YUVToRGB"

@@ -9,13 +9,6 @@ digraph structs {
     edge [arrowsize="0.5",color="black",fontcolor="black",fontname="Times-Roman"]
 
 
-jpeg [label=<
-<TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-  <TR>
-    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">jpeg<BR/>(JPEGImage)</FONT></TD>
-  </TR>
-</TABLE>>];
-
 ov5647 [label=<
 <TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
@@ -32,14 +25,10 @@ sink [label=<
 
 
 
-ov5647:i -> jpeg:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<u32>
-
-]
-
-jpeg:i -> sink:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<s8(307200)>
-,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >307200</FONT>
+ov5647:i -> sink:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<YUV_320_240(115200)>
+,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >115200</FONT>
 </TD></TR></TABLE>>
-,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >307200</FONT>
+,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >115200</FONT>
 </TD></TR></TABLE>>]
 
 

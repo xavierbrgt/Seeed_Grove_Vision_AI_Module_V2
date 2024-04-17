@@ -91,9 +91,9 @@ using namespace arm_cmsis_stream;
 Description of the scheduling. 
 
 */
-static uint8_t schedule[3]=
+static uint8_t schedule[2]=
 { 
-1,0,2,
+0,1,
 };
 
 
@@ -103,25 +103,15 @@ CG_BEFORE_FIFO_BUFFERS
 FIFO buffers
 
 ************/
-#define FIFOSIZE0 1
-#define FIFOSIZE1 307200
+#define FIFOSIZE0 115200
 
-typedef struct {
-uint32_t  *buf0;
-} buffers_t;
 
 CG_BEFORE_BUFFER
-static buffers_t buffers={0};
 
 int init_buffer_cv_scheduler(stream_env_t *env,
                               struct_algoResult *alg_result,
                               struct_fm_algoResult_with_fps *alg_fm_result)
 {
-    buffers.buf0 = (uint32_t *)CG_MALLOC(1 * sizeof(uint32_t));
-    if (buffers.buf0==NULL)
-    {
-        return(CG_MEMORY_ALLOCATION_FAILURE);
-    }
     return(CG_SUCCESS);
 }
 
@@ -129,22 +119,16 @@ void free_buffer_cv_scheduler(stream_env_t *env,
                               struct_algoResult *alg_result,
                               struct_fm_algoResult_with_fps *alg_fm_result)
 {
-    if (buffers.buf0!=NULL)
-    {
-        CG_FREE(buffers.buf0);
-    }
 }
 
 
 typedef struct {
-FIFO<uint32_t,FIFOSIZE0,1,0> *fifo0;
-FIFO<int8_t,FIFOSIZE1,1,0> *fifo1;
+FIFO<int8_t,FIFOSIZE0,1,0> *fifo0;
 } fifos_t;
 
 typedef struct {
-    JPEGImage<uint32_t,1,int8_t,307200> *jpeg;
-    Camera<uint32_t,1> *ov5647;
-    SendResult<int8_t,307200> *sink;
+    Camera<int8_t,115200> *ov5647;
+    SendResult<int8_t,115200> *sink;
 } nodes_t;
 
 CG_BEFORE_BUFFER
@@ -159,29 +143,19 @@ int init_cv_scheduler(stream_env_t *env,
                               struct_fm_algoResult_with_fps *alg_fm_result)
 {
     CG_BEFORE_FIFO_INIT;
-    fifos.fifo0 = new FIFO<uint32_t,FIFOSIZE0,1,0>(buffers.buf0);
+    fifos.fifo0 = new FIFO<int8_t,FIFOSIZE0,1,0>((void*)app_get_raw_addr());
     if (fifos.fifo0==NULL)
-    {
-        return(CG_MEMORY_ALLOCATION_FAILURE);
-    }
-    fifos.fifo1 = new FIFO<int8_t,FIFOSIZE1,1,0>((void*)app_get_jpeg_addr());
-    if (fifos.fifo1==NULL)
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
     }
 
     CG_BEFORE_NODE_INIT;
-    nodes.jpeg = new JPEGImage<uint32_t,1,int8_t,307200>(*(fifos.fifo0),*(fifos.fifo1));
-    if (nodes.jpeg==NULL)
-    {
-        return(CG_MEMORY_ALLOCATION_FAILURE);
-    }
-    nodes.ov5647 = new Camera<uint32_t,1>(*(fifos.fifo0));
+    nodes.ov5647 = new Camera<int8_t,115200>(*(fifos.fifo0));
     if (nodes.ov5647==NULL)
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
     }
-    nodes.sink = new SendResult<int8_t,307200>(*(fifos.fifo1),env,alg_result,alg_fm_result);
+    nodes.sink = new SendResult<int8_t,115200>(*(fifos.fifo0),env,alg_result,alg_fm_result,1,320,240);
     if (nodes.sink==NULL)
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
@@ -199,15 +173,7 @@ void free_cv_scheduler(stream_env_t *env,
     {
        delete fifos.fifo0;
     }
-    if (fifos.fifo1!=NULL)
-    {
-       delete fifos.fifo1;
-    }
 
-    if (nodes.jpeg!=NULL)
-    {
-        delete nodes.jpeg;
-    }
     if (nodes.ov5647!=NULL)
     {
         delete nodes.ov5647;
@@ -235,7 +201,7 @@ uint32_t cv_scheduler(int *error,stream_env_t *env,
     {
         /* Run a schedule iteration */
         CG_BEFORE_ITERATION;
-        for(unsigned long id=0 ; id < 3; id++)
+        for(unsigned long id=0 ; id < 2; id++)
         {
             CG_BEFORE_NODE_EXECUTION(schedule[id]);
 
@@ -243,17 +209,11 @@ uint32_t cv_scheduler(int *error,stream_env_t *env,
             {
                 case 0:
                 {
-                   cgStaticError = nodes.jpeg->run();
-                }
-                break;
-
-                case 1:
-                {
                    cgStaticError = nodes.ov5647->run();
                 }
                 break;
 
-                case 2:
+                case 1:
                 {
                    cgStaticError = nodes.sink->run();
                 }
