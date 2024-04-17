@@ -100,6 +100,17 @@ int main(void)
 }
 #endif
 
+#ifdef CMSIS_STREAM_APP
+#include "cmsis_stream_app.h"
+
+/** main entry */
+int main(void)
+{
+	board_init();
+	app_main();
+	return 0;
+}
+#endif
 
 #ifdef TFLM_FD_FM
 #include "tflm_fd_fm.h"
