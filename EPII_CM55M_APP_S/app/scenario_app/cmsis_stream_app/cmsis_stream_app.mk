@@ -1,5 +1,7 @@
 override SCENARIO_APP_SUPPORT_LIST := $(APP_TYPE)
 
+USE_NPU = 0
+
 APPL_DEFINES += -DCMSIS_STREAM_APP
 APPL_DEFINES += -Daudvidpre_ret_pll400_timer1 -DIP_xdma
 APPL_DEFINES += -DEVT_DATAPATH
@@ -17,8 +19,12 @@ EVENTHANDLER_SUPPORT_LIST += evt_datapath
 # Add new library here
 # The source code should be loacted in ~\library\{lib_name}\
 ##
-LIB_SEL = pwrmgmt sensordp tflmtag2209_u55tag2205 spi_ptl spi_eeprom hxevent img_proc
+LIB_SEL = pwrmgmt sensordp  spi_ptl spi_eeprom hxevent img_proc
 
+ifeq ($(USE_NPU), 1)
+LIB_SEL += tflmtag2209_u55tag2205 
+APPL_DEFINES += -DUSE_NPU
+endif
 ##
 # middleware support feature
 # Add new middleware here

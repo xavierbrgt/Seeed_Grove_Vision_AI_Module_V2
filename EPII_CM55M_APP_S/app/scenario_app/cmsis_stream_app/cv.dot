@@ -9,6 +9,22 @@ digraph structs {
     edge [arrowsize="0.5",color="black",fontcolor="black",fontname="Times-Roman"]
 
 
+
+jpeg [label=<
+<TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD PORT="i"><FONT POINT-SIZE="12.0" COLOR="black">i</FONT></TD>
+    <TD ALIGN="CENTER" ROWSPAN="2"><FONT COLOR="black" POINT-SIZE="14.0">jpeg<BR/>(JPEGEncoder)</FONT></TD>
+    <TD PORT="jpeg"><FONT POINT-SIZE="12.0" COLOR="black">jpeg</FONT></TD>
+  </TR>
+<TR>
+ 
+<TD></TD>
+<TD PORT="l"><FONT POINT-SIZE="12.0" COLOR="black">l</FONT></TD>
+</TR>
+
+</TABLE>>];
+
 ov5647 [label=<
 <TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
@@ -16,20 +32,52 @@ ov5647 [label=<
   </TR>
 </TABLE>>];
 
-sink [label=<
+rgb [label=<
 <TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">sink<BR/>(SendResult)</FONT></TD>
+    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">rgb<BR/>(YUVToRGB)</FONT></TD>
   </TR>
 </TABLE>>];
 
 
+sink [label=<
+<TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD PORT="jpeg"><FONT POINT-SIZE="12.0" COLOR="black">jpeg</FONT></TD>
+    <TD ALIGN="CENTER" ROWSPAN="2"><FONT COLOR="black" POINT-SIZE="14.0">sink<BR/>(SendResult)</FONT></TD>
+    <TD></TD>
+  </TR>
+<TR>
+<TD PORT="l"><FONT POINT-SIZE="12.0" COLOR="black">l</FONT></TD>
 
-ov5647:i -> sink:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<YUV_320_240(115200)>
+ 
+<TD></TD></TR>
+
+</TABLE>>];
+
+
+
+ov5647:i -> rgb:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<YUV_320_240(115200)>
 ,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >115200</FONT>
 </TD></TR></TABLE>>
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >115200</FONT>
 </TD></TR></TABLE>>]
+
+rgb:i -> jpeg:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<RGB_320_240(230400)>
+,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >230400</FONT>
+</TD></TR></TABLE>>
+,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >230400</FONT>
+</TD></TR></TABLE>>]
+
+jpeg:jpeg -> sink:jpeg [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<s8(76900)>
+,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >76900</FONT>
+</TD></TR></TABLE>>
+,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >76900</FONT>
+</TD></TR></TABLE>>]
+
+jpeg:l -> sink:l [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<u32>
+
+]
 
 
 }

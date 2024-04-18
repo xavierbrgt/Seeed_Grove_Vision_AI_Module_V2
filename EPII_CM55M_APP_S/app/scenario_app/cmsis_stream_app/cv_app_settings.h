@@ -1,9 +1,8 @@
 #ifndef CV_APP_SETTINGS_H_
 #define CV_APP_SETTINGS_H_
 
-//#define USE_NPU
 //#define ORIGINAL_APP
-
+#include "python_config.h"
 #include "spi_protocol.h"
 #include "memory_manage.h"
 
@@ -53,19 +52,23 @@ typedef struct _stream_env {
 
 #define CG_FREE(A) 
 
-#define CPU_CLK (0xffffff+1)
+#define CPU_CLK (0xfffffful+1)
 
 
 
 #define CG_BEFORE_ITERATION \
 SystemGetTick(&env->systick_1, &env->loop_cnt_1);
 
-#define CG_AFTER_ITERATION                                                                     \
-set_model_change_by_uart();                                                                    \
-SystemGetTick(&env->systick_1, &env->loop_cnt_1);                                              \
-sensordplib_retrigger_capture();                                                               \
-                                                                                               \
-SystemGetTick(&env->systick_2, &env->loop_cnt_2);                                              \
-env->capture_image_tick = (env->loop_cnt_2-env->loop_cnt_1)*CPU_CLK+(env->systick_1-env->systick_2);
+#define CG_AFTER_ITERATION                                                          \
+set_model_change_by_uart();                                                         \
+{                                                                                   \
+    uint32_t systick_1,systick_2,loop_cnt_1,loop_cnt_2;                             \
+                                                                                    \
+    SystemGetTick(&systick_1, &loop_cnt_1);                                         \
+    sensordplib_retrigger_capture();                                                \
+                                                                                    \
+    SystemGetTick(&systick_2, &loop_cnt_2);                                         \
+    env->capture_image_tick = (loop_cnt_2-loop_cnt_1)*CPU_CLK+(systick_1-systick_2);\
+}
 
 #endif

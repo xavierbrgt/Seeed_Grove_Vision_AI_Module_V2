@@ -40,6 +40,7 @@ void cisdp_sensor_start();
 void cisdp_sensor_stop();
 void cisdp_get_jpginfo(uint32_t *jpeg_enc_filesize, uint32_t *jpeg_enc_addr);
 
+uint32_t app_get_jpeg_header_addr();
 uint32_t app_get_jpeg_addr();
 uint32_t app_get_jpeg_sz();
 uint32_t app_get_raw_addr();
@@ -48,7 +49,8 @@ uint32_t app_get_raw_width();
 uint32_t app_get_raw_height();
 uint32_t app_get_raw_channels();
 
-void invalidate_cache_for_camera();
+void invalidate_raw_cache_for_camera(APP_DP_INP_SUBSAMPLE_E subs);
+void invalidate_jpeg_cache_for_camera(APP_DP_INP_SUBSAMPLE_E subs);
 
 #ifdef __cplusplus
 }

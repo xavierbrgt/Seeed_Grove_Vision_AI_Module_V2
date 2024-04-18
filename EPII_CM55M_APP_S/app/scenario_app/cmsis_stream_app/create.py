@@ -70,6 +70,7 @@ with open("cv.dot","w") as f:
     scheduling.graphviz(f)
 
 run(["dot.exe","-Tpdf","-o","cv.pdf","cv.dot"])
+run(["touch.exe","cmsis_stream_app.c"])
 
 with open("python_config.h","w") as h:
     print(f"""#ifndef PYTHON_CONFIG_H

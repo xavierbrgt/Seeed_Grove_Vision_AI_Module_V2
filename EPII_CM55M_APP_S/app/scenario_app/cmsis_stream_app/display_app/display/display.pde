@@ -10,6 +10,8 @@ import java.io.ByteArrayInputStream;
 int lf = 10;    // Linefeed in ASCII
 String myString = null;
 
+float freq = 400000000;
+
 Serial myPort;  // The serial port
 
 void setup() {
@@ -23,6 +25,8 @@ void setup() {
   // in the middle of a string from the sender.
   myString = myPort.readStringUntil(lf);
   myString = null;
+  
+  textSize(32);
 }
 
 void draw() {
@@ -40,6 +44,7 @@ void draw() {
              JSONObject data = json.getJSONObject("data");
              if (data != null)
              {
+              
                String image = data.getString("image");
                if (image != null)
                {
@@ -52,6 +57,15 @@ void draw() {
                  p.resize(640, 480);
                  image(p, 0, 0);
                } 
+               
+               JSONArray click = data.getJSONArray("algo_tick");
+               if (click != null)
+               {
+                 float ms = 1.0*click.getJSONArray(0).getInt(0)/freq*1000;
+                 text(str(ms) + " ms",5,40);
+               }
+               
+               
               
              }
           }

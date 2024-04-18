@@ -213,31 +213,6 @@ if (!img || !img->data || !img->size) [[unlikely]]
     return concat_strings("\"image\": \"", img_2_json_str_buffer, "\"");
 }
 
-std::string rgb_img_2_json_str(el_img_t* img) {
-if (!img || !img->data || !img->size) [[unlikely]]
-        return std::string("\"rgbimage\": \"\"");
-
-    static std::size_t size        = 0;
-    static std::size_t buffer_size = 0;
-
-
-    // only reallcate memory when buffer size is not enough
-    if (img->size > size) [[unlikely]] {
-        size        = img->size;
-        buffer_size = (((size + 2u) / 3u) << 2u) + 1u;  // base64 encoded size, +1 for terminating null character
-        printf("buffer_size: %d may be too small reallocating\r\n\n",buffer_size);
-        printf("if still fail, please modify linker script heap size\r\n\n");
-        if (img_2_json_str_buffer) [[likely]]
-            delete[] img_2_json_str_buffer;
-        img_2_json_str_buffer = new char[buffer_size]{};
-    }
-
-    std::memset(img_2_json_str_buffer, 0, buffer_size);
-    el_base64_encode(img->data, img->size, img_2_json_str_buffer);
-
-    return concat_strings("\"rgbimage\": \"", img_2_json_str_buffer, "\"");
-}
-
 
 std::string img_res_2_json_str(const el_img_t* img) {
     return concat_strings("\"resolution\": [", std::to_string(img->width), ", ", std::to_string(img->height), "]");
@@ -695,6 +670,7 @@ uint16_t      _action_hash;
                                     std::to_string(_times),
                                     data,
                                     "}}\n")};
+    printf("send bytes\r\n");
     send_bytes(ss.c_str(), ss.size());
 }
 inline std::string quoted(const std::string& str, const char delim = '"') {

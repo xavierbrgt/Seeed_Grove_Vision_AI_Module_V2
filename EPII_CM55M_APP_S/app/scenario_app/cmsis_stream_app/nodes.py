@@ -8,7 +8,7 @@ from html import escape
 #posType = CStructType("struct_position",8)
 
 #bufferType = CType(SINT8)
-#activateType = CType(UINT32)
+activateType = CType(UINT32)
 
 class CImageType(CGStaticType):
     YUV = 1
@@ -71,18 +71,16 @@ class CImageType(CGStaticType):
 
 
 class SendResult(GenericSink):
-    def __init__(self,name,img_t,jpeg=True):
+    def __init__(self,name,w,h):
         GenericSink.__init__(self,name)
-        self.addInput("i",img_t,img_t._nb_bytes)
+        self.addInput("jpeg",CType(SINT8),w*h+100)
+        self.addInput("l",CType(UINT32),1)
+
         self.addVariableArg("env")
         self.addVariableArg("alg_result")
         self.addVariableArg("alg_fm_result")
-        if jpeg:
-            self.addLiteralArg(1)
-        else:
-            self.addLiteralArg(0)
-        self.addLiteralArg(img_t.width)
-        self.addLiteralArg(img_t.height)
+        self.addLiteralArg(w)
+        self.addLiteralArg(h)
         
     @property
     def typeName(self):
@@ -184,7 +182,7 @@ class Camera(GenericSource):
         self._mode = mode
         img_t = self.image_type
         self.addOutput("o",img_t,img_t._nb_bytes)
-
+        
 
     @property
     def typeName(self):
@@ -192,3 +190,38 @@ class Camera(GenericSource):
         return "Camera"
 
 
+
+class YUVToRGB(GenericNode):
+    def __init__(self,name,w,h):
+        GenericSink.__init__(self,name)
+        src_t = CImageType(w,h,CImageType.YUV)
+        dst_t = CImageType(w,h,CImageType.RGB)
+
+        self.addInput("i",src_t,src_t._nb_bytes)
+        self.addOutput("o",dst_t,dst_t._nb_bytes)
+        self.addLiteralArg(w)
+        self.addLiteralArg(h)
+        
+    @property
+    def typeName(self):
+        """The name of the C++ class implementing this node"""
+        return "YUVToRGB"
+
+class JPEGEncoder(GenericNode):
+    def __init__(self,name,w,h):
+        GenericSink.__init__(self,name)
+        src_t = CImageType(w,h,CImageType.RGB)
+
+        self.addInput("i",src_t,src_t._nb_bytes)
+        # JPEG header + max length buffer
+        self.addOutput("jpeg",CType(SINT8),w*h+100)
+        # Real size in buffer
+        self.addOutput("l",CType(UINT32),1)
+
+        self.addLiteralArg(w)
+        self.addLiteralArg(h)
+        
+    @property
+    def typeName(self):
+        """The name of the C++ class implementing this node"""
+        return "JPEGEncoder"

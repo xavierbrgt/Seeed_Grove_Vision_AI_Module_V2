@@ -81,7 +81,7 @@ SECTIONS
     	__bss_algo_section_table_end = .;
     	* (.rodata.g_person_detect_model_data) 
     } > CM55M_S_SRAM
-    
+
     .rodata : ALIGN(4)
     {
         __rodata_start = .;

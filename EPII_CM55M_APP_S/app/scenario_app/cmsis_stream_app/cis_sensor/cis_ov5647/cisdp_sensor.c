@@ -675,15 +675,48 @@ void cisdp_get_jpginfo(uint32_t *jpeg_enc_filesize, uint32_t *jpeg_enc_addr)
     //dbg_printf(DBG_LESS_INFO, "current frame_no=%d, jpeg_size=0x%x,addr=0x%x\n",frame_no,*jpeg_enc_filesize,*jpeg_enc_addr);
 }
 
+uint32_t app_get_jpeg_header_addr()
+{
+    return(g_jpegautofill_addr);
+}
+
 uint32_t app_get_jpeg_addr()
 {
     //EPII_InvalidateDCache_by_Addr(g_wdma2_baseaddr, 4);
 	return g_wdma2_baseaddr;
 }
 
-void invalidate_cache_for_camera()
+void invalidate_raw_cache_for_camera(APP_DP_INP_SUBSAMPLE_E subs)
 {
-   hx_InvalidateDCache_by_Addr((volatile void *)g_wdma2_baseaddr, 100+76800);
+   //hx_InvalidateDCache_by_Addr((volatile void *)g_wdma3_baseaddr, app_get_raw_sz());
+
+}
+
+void invalidate_jpeg_cache_for_camera(APP_DP_INP_SUBSAMPLE_E subs)
+{
+   if(subs == APP_DP_RES_RGB640x480_INP_SUBSAMPLE_1X)
+   {
+      hx_InvalidateDCache_by_Addr((volatile void *)g_jpegautofill_addr, 
+       100+76800);
+   
+   }
+   if(subs == APP_DP_RES_RGB640x480_INP_SUBSAMPLE_2X)
+   {
+     hx_InvalidateDCache_by_Addr((volatile void *)g_jpegautofill_addr, 
+       100+19200);
+   }
+   
+   if(subs == APP_DP_RES_YUV640x480_INP_SUBSAMPLE_1X)
+   {
+     hx_InvalidateDCache_by_Addr((volatile void *)g_jpegautofill_addr, 
+       100+76800);
+   }
+   
+   if(subs == APP_DP_RES_YUV640x480_INP_SUBSAMPLE_2X)
+   {
+     hx_InvalidateDCache_by_Addr((volatile void *)g_jpegautofill_addr, 
+       100+19200);
+   }
 }
 
 uint32_t app_get_jpeg_sz()

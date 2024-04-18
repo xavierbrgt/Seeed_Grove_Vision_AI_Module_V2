@@ -14,7 +14,12 @@
 #include "powermode_export.h"
 #include "python_config.h"
 
+#if (JPEG&1)
 #define WATCH_DOG_TIMEOUT_TH	(500) //ms
+#else
+#define WATCH_DOG_TIMEOUT_TH	(500) //ms
+#endif
+
 #define WE2_CHIP_VERSION_C		0x8538000c
 
 #ifdef TRUSTZONE_SEC
@@ -721,6 +726,8 @@ int app_main(void) {
 	stream_env.systick_2 = 0;
 	stream_env.loop_cnt_1 = 0;
 	stream_env.loop_cnt_2 = 0;
+	stream_env.capture_image_tick = 0;
+	stream_env.algo_tick = 0;
 	cmsis_stream_init(&stream_env,true, true, FACE_DECTECT_FLASH_ADDR, FACE_MESH_FLASH_ADDR, IRIS_LANDMARKS_FLASH_ADDR);
 	app_start_state(APP_STATE_ALLON_FD_FM);
 	
