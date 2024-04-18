@@ -168,7 +168,7 @@ el_err_code_t send_bytes(const char* buffer, size_t size) ;
 el_err_code_t read_bytes(char* buffer, size_t size);
 el_err_code_t read_bytes_nonblock(char* buffer, size_t size);
 void set_model_change_by_uart();
-std::string img_2_json_str(el_img_t* img);
+std::string img_2_json_str(unsigned int size,const unsigned char* img);
 void event_reply(std::string data);
 void send_device_id();
 template <typename T> constexpr std::string  results_2_json_str(const std::forward_list<T>& results);

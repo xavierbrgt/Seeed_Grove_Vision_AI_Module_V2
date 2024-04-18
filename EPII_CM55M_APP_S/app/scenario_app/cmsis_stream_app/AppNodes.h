@@ -32,6 +32,9 @@
 #include "spi_protocol.h"
 #include "WE2_core.h"
 
+#include "arm_math_types.h"
+
+#include "canny_edge.h"
 #include "img_proc_helium.h"
 
 // https://github.com/serge-rgb/TinyJPEG/blob/master/tiny_jpeg.h
@@ -69,6 +72,94 @@ static void write_jpeg_data(void* context, void* data, int size)
     c-> len += size;
 
 }
+
+template<typename IN, int inputSize,
+         typename OUT,int outputSize>
+class CannyEdge;
+
+template<int inputSize,int outputSize>
+class CannyEdge<int8_t,inputSize,
+                int8_t,outputSize>: 
+      public GenericNode<int8_t,inputSize,
+                         int8_t,outputSize>
+{
+public:
+    /* Constructor needs the input and output FIFOs */
+    CannyEdge(FIFOBase<int8_t> &src,
+                FIFOBase<int8_t> &dst,
+                int w,int h):
+    GenericNode<int8_t,inputSize,int8_t,outputSize>(src,dst),
+    mW(w),mH(h){
+            img_tmp_grad1.numRows=3;
+            img_tmp_grad1.numCols=w;
+            img_tmp_grad1.pData = (divergence_q15_t*) mm_reserve_align(2*3*w*sizeof(q15_t),0x20);
+
+            img_tmp_grad2.numRows=3;
+            img_tmp_grad2.numCols=w;
+            img_tmp_grad2.pData = (divergence_q15_t*)mm_reserve_align(2*3*w*sizeof(q15_t),0x20);
+
+            img_tmp.numRows=3;
+            img_tmp.numCols=w;
+            img_tmp.pData = (q15_t*)mm_reserve_align(3*w*sizeof(q15_t),0x20);
+    };
+
+    ~CannyEdge()
+    {
+       //free(img_tmp_grad1.pData);
+       //free(img_tmp_grad2.pData);
+       //free(img_tmp.pData);
+    }
+
+    /* In asynchronous mode, node execution will be 
+       skipped in case of underflow on the input 
+       or overflow in the output.
+    */
+    int prepareForRunning() final
+    {
+        if (this->willOverflow() ||
+            this->willUnderflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
+        return(0);
+    };
+    
+    /* 
+       Node processing
+       1 is added to the input
+    */
+    int run() final{
+        int8_t *i=this->getReadBuffer();
+        int8_t *o=this->getWriteBuffer();
+
+        arm_image_gray_q15_t input;
+        arm_image_gray_q15_t output;
+
+        input.numRows=mH;
+        input.numCols=mW;
+        input.pData = (q15_t*)i;
+
+        output.numRows=mH;
+        output.numCols=mW;
+        output.pData = (q15_t*)o;
+
+       
+        arm_canny_edge_sobel_in_q15_out_u8_proc_q15(&input, 
+                                                 &output, 
+                                                 &img_tmp_grad1, 
+                                                 &img_tmp, 
+                                                 &img_tmp_grad2);
+       
+        
+        return(0);
+    };
+protected:
+    int mW,mH;
+    arm_buffer_2_q15_t img_tmp_grad1;
+    arm_buffer_2_q15_t img_tmp_grad2;
+    arm_image_gray_q15_t img_tmp;
+};
 
 template<typename IN, int inputSize,
          typename OUT1,int outputSize1,
@@ -121,15 +212,20 @@ public:
         context.len = 0; 
         context.start = (uint8_t*)stream;
 
-        int err = tje_encode_with_func(write_jpeg_data,
+        int ok = tje_encode_with_func(write_jpeg_data,
                          &context,
                          1,
                          mW,
                          mH,
                          3,
                          (const unsigned char*)rgb);
+        if (!ok)
+        {
+            printf("Error encoding jpeg\r\n");
+        }
 
         nb[0] = context.len;
+        //printf("%ld, max = %ld\n\r",context.len,outputSize);
         
         return(0);
     };
@@ -201,84 +297,18 @@ public:
         int8_t  *stream=this->getReadBuffer1();
         uint32_t  *l=this->getReadBuffer2();
 
-        uint8_t *buf = nullptr;
 
         SystemGetTick(&m_env->systick_2, &m_env->loop_cnt_2);
         uint32_t algo_tick = (m_env->loop_cnt_2-m_env->loop_cnt_1)*CPU_CLK+(m_env->systick_1-m_env->systick_2);              
         algo_tick += m_env->capture_image_tick;   
 
-        el_img_t temp_el_jpg_img = el_img_t{};
-        
-        temp_el_jpg_img.data = (uint8_t*)stream;
-        temp_el_jpg_img.size = l[0];
-        temp_el_jpg_img.width = mWidth;
-        temp_el_jpg_img.height = mHeight;
-
-        printf("%d\r\n",l[0]);
-        
-        
-        temp_el_jpg_img.format = EL_PIXEL_FORMAT_JPEG;
-        temp_el_jpg_img.rotate = EL_PIXEL_ROTATE_0;
-
-        std::forward_list<el_fm_point_t> el_fm_point_algo;
     
-        el_fm_point_t temp_el_fm_point_algo;
-        temp_el_fm_point_algo.el_box.x = m_alg_fm_result->face_bbox[0].x;
-        temp_el_fm_point_algo.el_box.y = m_alg_fm_result->face_bbox[0].y;
-        temp_el_fm_point_algo.el_box.w = m_alg_fm_result->face_bbox[0].width;
-        temp_el_fm_point_algo.el_box.h = m_alg_fm_result->face_bbox[0].height;
-        temp_el_fm_point_algo.el_box.score = m_alg_fm_result->face_bbox[0].face_score;
-        temp_el_fm_point_algo.el_box.target = 0;
-        for(int c=0;c<FACE_MESH_POINT_NUM;c++)
-        {
-            
-            temp_el_fm_point_algo.el_fm_point[c].x = m_alg_fm_result->fmr[c].x;
-            temp_el_fm_point_algo.el_fm_point[c].y = m_alg_fm_result->fmr[c].y;
-            temp_el_fm_point_algo.el_fm_point[c].score = temp_el_fm_point_algo.el_box.score;
-            temp_el_fm_point_algo.el_fm_point[c].target = 0;
-        }
-    
-        for(int c=0;c<FM_IRIS_POINT_NUM;c++)
-        {
-            temp_el_fm_point_algo.el_fm_iris[c].x = m_alg_fm_result->fmr_iris[c].x;
-            temp_el_fm_point_algo.el_fm_iris[c].y = m_alg_fm_result->fmr_iris[c].y;
-            temp_el_fm_point_algo.el_fm_iris[c].score = temp_el_fm_point_algo.el_box.score;
-            temp_el_fm_point_algo.el_fm_iris[c].target = 0;
-        }
-    
-    
-        temp_el_fm_point_algo.el_fm_angle.yaw = m_alg_fm_result->face_angle.yaw * 100.0;
-        temp_el_fm_point_algo.el_fm_angle.pitch = m_alg_fm_result->face_angle.pitch* 100.0;
-        temp_el_fm_point_algo.el_fm_angle.roll = m_alg_fm_result->face_angle.roll* 100.0;
-        temp_el_fm_point_algo.el_fm_angle.MAR = m_alg_fm_result->face_angle.MAR* 100.0;
-        temp_el_fm_point_algo.el_fm_angle.LEAR = m_alg_fm_result->face_angle.LEAR* 100.0;
-        temp_el_fm_point_algo.el_fm_angle.REAR = m_alg_fm_result->face_angle.REAR* 100.0;
-    
-        temp_el_fm_point_algo.el_fm_angle.left_iris_theta = m_alg_fm_result->left_iris_theta* 100.0;
-        temp_el_fm_point_algo.el_fm_angle.left_iris_phi = m_alg_fm_result->left_iris_phi* 100.0;
-        temp_el_fm_point_algo.el_fm_angle.right_iris_theta = m_alg_fm_result->right_iris_theta* 100.0;
-        temp_el_fm_point_algo.el_fm_angle.right_iris_phi = m_alg_fm_result->right_iris_phi* 100.0;
-    
-        el_fm_point_algo.emplace_front(temp_el_fm_point_algo);
-    
-        std::forward_list<el_box_t> el_fm_face_bbox_algo;
-    
-        el_box_t temp_el_fm_face_bbox_algo;
-        for(int i = 0; i < MAX_TRACKED_ALGO_RES;i++)
-        {
-            temp_el_fm_face_bbox_algo.x = m_alg_fm_result->face_bbox[i].x;
-            temp_el_fm_face_bbox_algo.y = m_alg_fm_result->face_bbox[i].y;
-            temp_el_fm_face_bbox_algo.w = m_alg_fm_result->face_bbox[i].width;
-            temp_el_fm_face_bbox_algo.h = m_alg_fm_result->face_bbox[i].height;
-            temp_el_fm_face_bbox_algo.score = m_alg_fm_result->face_bbox[i].face_score;
-            temp_el_fm_face_bbox_algo.target = i;
-    
-            el_fm_face_bbox_algo.emplace_front(temp_el_fm_face_bbox_algo);
-        }
-
         send_device_id();
         
-        event_reply(concat_strings(", ", fm_face_bbox_results_2_json_str(el_fm_face_bbox_algo),", ", algo_tick_2_json_str(algo_tick),", ", fm_point_results_2_json_str(el_fm_point_algo), ", ", img_2_json_str(&temp_el_jpg_img)));
+        event_reply(concat_strings(", ", 
+            algo_tick_2_json_str(algo_tick), 
+            ", ", 
+            img_2_json_str((std::size_t)l[0],(const unsigned char*)stream)));
         
        
         return(0);
@@ -318,6 +348,175 @@ public:
         return(0);
     };
 
+};
+
+
+
+template<typename IN, int inputSize,
+         typename OUT,int outputSize>
+class YUVToGray16;
+
+
+template<int inputSize,int outputSize>
+class YUVToGray16<int8_t,inputSize,
+               int8_t,outputSize>: 
+      public GenericNode<int8_t,inputSize,
+                         int8_t,outputSize>
+{
+public:
+    /* Constructor needs the input and output FIFOs */
+    YUVToGray16(FIFOBase<int8_t> &src,
+             FIFOBase<int8_t> &dst,int w,int h):
+    GenericNode<int8_t,inputSize,int8_t,outputSize>(src,dst),
+    mW(w),mH(h){};
+
+    /* In asynchronous mode, node execution will be 
+       skipped in case of underflow on the input 
+       or overflow in the output.
+    */
+    int prepareForRunning() final
+    {
+        if (this->willOverflow() ||
+            this->willUnderflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
+        return(0);
+    };
+    
+    /* 
+       Node processing
+       1 is added to the input
+    */
+    int run() final{
+        int8_t *yuv=this->getReadBuffer();
+        int8_t *d=this->getWriteBuffer();
+
+        q15_t *gray = (q15_t*)d;
+
+        for(int32_t k=0;k<mW*mH;k++)
+        {
+           *gray++ = ((q15_t)*yuv++) << 7;
+        }
+        
+        return(0);
+    };
+protected:
+    int mW,mH;
+};
+
+template<typename IN, int inputSize,
+         typename OUT,int outputSize>
+class Gray16ToRGB;
+
+
+template<int inputSize,int outputSize>
+class Gray16ToRGB<int8_t,inputSize,
+               int8_t,outputSize>: 
+      public GenericNode<int8_t,inputSize,
+                         int8_t,outputSize>
+{
+public:
+    /* Constructor needs the input and output FIFOs */
+    Gray16ToRGB(FIFOBase<int8_t> &src,
+             FIFOBase<int8_t> &dst,int w,int h):
+    GenericNode<int8_t,inputSize,int8_t,outputSize>(src,dst),
+    mW(w),mH(h){};
+
+    /* In asynchronous mode, node execution will be 
+       skipped in case of underflow on the input 
+       or overflow in the output.
+    */
+    int prepareForRunning() final
+    {
+        if (this->willOverflow() ||
+            this->willUnderflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
+        return(0);
+    };
+    
+    /* 
+       Node processing
+       1 is added to the input
+    */
+    int run() final{
+        int8_t *g=this->getReadBuffer();
+        int8_t *rgb=this->getWriteBuffer();
+
+        q15_t *gray = (q15_t*)g;
+
+        for(int32_t k=0;k<mW*mH;k++)
+        {
+           int8_t v = *gray++ >> 7;
+           *rgb++ = v;
+           *rgb++ = v;
+           *rgb++ = v;
+        }
+        
+        return(0);
+    };
+protected:
+    int mW,mH;
+};
+
+template<typename IN, int inputSize,
+         typename OUT,int outputSize>
+class Gray8ToRGB;
+
+
+template<int inputSize,int outputSize>
+class Gray8ToRGB<int8_t,inputSize,
+               int8_t,outputSize>: 
+      public GenericNode<int8_t,inputSize,
+                         int8_t,outputSize>
+{
+public:
+    /* Constructor needs the input and output FIFOs */
+    Gray8ToRGB(FIFOBase<int8_t> &src,
+             FIFOBase<int8_t> &dst,int w,int h):
+    GenericNode<int8_t,inputSize,int8_t,outputSize>(src,dst),
+    mW(w),mH(h){};
+
+    /* In asynchronous mode, node execution will be 
+       skipped in case of underflow on the input 
+       or overflow in the output.
+    */
+    int prepareForRunning() final
+    {
+        if (this->willOverflow() ||
+            this->willUnderflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
+        return(0);
+    };
+    
+    /* 
+       Node processing
+       1 is added to the input
+    */
+    int run() final{
+        uint8_t *g=(uint8_t*)this->getReadBuffer();
+        uint8_t *rgb=(uint8_t*)this->getWriteBuffer();
+
+
+        for(int32_t k=0;k<mW*mH;k++)
+        {
+           uint8_t v = *g++;
+           *rgb++ = v;
+           *rgb++ = v;
+           *rgb++ = v;
+        }
+        
+        return(0);
+    };
+protected:
+    int mW,mH;
 };
 
 template<typename IN, int inputSize,

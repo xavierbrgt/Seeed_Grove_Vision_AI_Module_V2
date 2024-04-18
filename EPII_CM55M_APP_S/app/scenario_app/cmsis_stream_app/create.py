@@ -2,7 +2,9 @@ from subprocess import run
 # Include definition of the nodes
 from nodes import * 
 # Include definition of the graph
-from graph import * 
+#from graph import * 
+#
+from complex_graph import * 
 
 from cmsis_stream.cg.yaml import *
 
@@ -33,6 +35,8 @@ conf.prefix="cv_"
 conf.schedName="cv_scheduler"
 conf.bufferAllocation = True
 conf.heapAllocation = True
+conf.memoryOptimization = True 
+conf.horizontal = True 
 
 # Compute a static scheduling of the graph 
 # The size of FIFO is also computed
@@ -67,7 +71,7 @@ generateGenericNodes(".")
 
 # Generate a graphviz representation of the graph
 with open("cv.dot","w") as f:
-    scheduling.graphviz(f)
+    scheduling.graphviz(f,config=conf)
 
 run(["dot.exe","-Tpdf","-o","cv.pdf","cv.dot"])
 run(["touch.exe","cmsis_stream_app.c"])

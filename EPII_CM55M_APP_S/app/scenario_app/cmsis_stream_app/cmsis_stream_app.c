@@ -82,12 +82,9 @@
 #include "hx_drv_watchdog.h"
 
 #include "cg_status.h"
+#include "cv_scheduler.h"
 
-#ifdef EPII_FPGA
-#define DBG_APP_LOG             (1)
-#else
-#define DBG_APP_LOG             (0)
-#endif
+
 #if DBG_APP_LOG
     #define dbg_app_log(fmt, ...)       xprintf(fmt, ##__VA_ARGS__)
 #else
@@ -101,7 +98,7 @@ static uint8_t 	g_frame_ready;
 static uint32_t g_cur_jpegenc_frame;
 static uint8_t 	g_time;
 static uint8_t g_spi_master_initial_status;
-static uint32_t g_use_case;
+//static uint32_t g_use_case;
 /*volatile*/ uint32_t jpeg_addr, jpeg_sz;
 struct_algoResult algoresult;
 struct_hp_algoResult algoresult_pl;
@@ -312,7 +309,8 @@ static void dp_app_cv_fd_fm_eventhdl_cb(EVT_INDEX_E event)
 {
 	uint16_t err;
 	int32_t read_status;
-	uint32_t chipid, version;
+	//uint32_t chipid, version;
+	(void)read_status;
 
 	#if DBG_APP_LOG
 	dbg_printf(DBG_LESS_INFO, "EVT event = %d\n", event);

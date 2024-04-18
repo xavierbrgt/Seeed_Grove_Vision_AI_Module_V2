@@ -188,8 +188,8 @@ void el_base64_encode(const unsigned char* in, int in_len, char* out) {
     }
 }
 
-std::string img_2_json_str(el_img_t* img) {
-if (!img || !img->data || !img->size) [[unlikely]]
+std::string img_2_json_str(unsigned int img_size,const unsigned char* img_data) {
+if (!img_data || !img_size) [[unlikely]]
         return std::string("\"image\": \"\"");
 
     static std::size_t size        = 0;
@@ -197,18 +197,18 @@ if (!img || !img->data || !img->size) [[unlikely]]
 
 
     // only reallcate memory when buffer size is not enough
-    if (img->size > size) [[unlikely]] {
-        size        = img->size;
+    if (img_size > size) [[unlikely]] {
+        size        = img_size;
         buffer_size = (((size + 2u) / 3u) << 2u) + 1u;  // base64 encoded size, +1 for terminating null character
-        printf("buffer_size: %d may be too small reallocating\r\n\n",buffer_size);
-        printf("if still fail, please modify linker script heap size\r\n\n");
+        //printf("buffer_size: %d may be too small reallocating\r\n\n",buffer_size);
+        //printf("if still fail, please modify linker script heap size\r\n\n");
         if (img_2_json_str_buffer) [[likely]]
             delete[] img_2_json_str_buffer;
         img_2_json_str_buffer = new char[buffer_size]{};
     }
 
     std::memset(img_2_json_str_buffer, 0, buffer_size);
-    el_base64_encode(img->data, img->size, img_2_json_str_buffer);
+    el_base64_encode(img_data, img_size, img_2_json_str_buffer);
 
     return concat_strings("\"image\": \"", img_2_json_str_buffer, "\"");
 }
@@ -670,7 +670,6 @@ uint16_t      _action_hash;
                                     std::to_string(_times),
                                     data,
                                     "}}\n")};
-    printf("send bytes\r\n");
     send_bytes(ss.c_str(), ss.size());
 }
 inline std::string quoted(const std::string& str, const char delim = '"') {

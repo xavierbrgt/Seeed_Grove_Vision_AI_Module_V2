@@ -91,9 +91,9 @@ using namespace arm_cmsis_stream;
 Description of the scheduling. 
 
 */
-static uint8_t schedule[4]=
+static uint8_t schedule[6]=
 { 
-1,2,0,3,
+3,4,1,5,2,0,
 };
 
 
@@ -104,14 +104,16 @@ FIFO buffers
 
 ************/
 #define FIFOSIZE0 115200
-#define FIFOSIZE1 230400
-#define FIFOSIZE2 76900
-#define FIFOSIZE3 1
+#define FIFOSIZE1 153600
+#define FIFOSIZE2 76800
+#define FIFOSIZE3 230400
+#define FIFOSIZE4 76900
+#define FIFOSIZE5 1
 
 typedef struct {
-int8_t  *buf0;
-int8_t  *buf1;
-uint32_t  *buf2;
+uint8_t  *buf0;
+uint8_t  *buf1;
+uint8_t  *buf2;
 } buffers_t;
 
 CG_BEFORE_BUFFER
@@ -121,17 +123,17 @@ int init_buffer_cv_scheduler(stream_env_t *env,
                               struct_algoResult *alg_result,
                               struct_fm_algoResult_with_fps *alg_fm_result)
 {
-    buffers.buf0 = (int8_t *)CG_MALLOC(230400 * sizeof(int8_t));
+    buffers.buf0 = (uint8_t *)CG_MALLOC(230400 * sizeof(uint8_t));
     if (buffers.buf0==NULL)
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
     }
-    buffers.buf1 = (int8_t *)CG_MALLOC(76900 * sizeof(int8_t));
+    buffers.buf1 = (uint8_t *)CG_MALLOC(76900 * sizeof(uint8_t));
     if (buffers.buf1==NULL)
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
     }
-    buffers.buf2 = (uint32_t *)CG_MALLOC(1 * sizeof(uint32_t));
+    buffers.buf2 = (uint8_t *)CG_MALLOC(4 * sizeof(uint8_t));
     if (buffers.buf2==NULL)
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
@@ -162,14 +164,18 @@ typedef struct {
 FIFO<int8_t,FIFOSIZE0,1,0> *fifo0;
 FIFO<int8_t,FIFOSIZE1,1,0> *fifo1;
 FIFO<int8_t,FIFOSIZE2,1,0> *fifo2;
-FIFO<uint32_t,FIFOSIZE3,1,0> *fifo3;
+FIFO<int8_t,FIFOSIZE3,1,0> *fifo3;
+FIFO<int8_t,FIFOSIZE4,1,0> *fifo4;
+FIFO<uint32_t,FIFOSIZE5,1,0> *fifo5;
 } fifos_t;
 
 typedef struct {
+    SendResult<int8_t,76900,uint32_t,1> *Serial;
+    CannyEdge<int8_t,153600,int8_t,76800> *canny;
     JPEGEncoder<int8_t,230400,int8_t,76900,uint32_t,1> *jpeg;
     Camera<int8_t,115200> *ov5647;
-    YUVToRGB<int8_t,115200,int8_t,230400> *rgb;
-    SendResult<int8_t,76900,uint32_t,1> *sink;
+    YUVToGray16<int8_t,115200,int8_t,153600> *to_gray;
+    Gray8ToRGB<int8_t,76800,int8_t,230400> *to_rgb;
 } nodes_t;
 
 CG_BEFORE_BUFFER
@@ -199,14 +205,34 @@ int init_cv_scheduler(stream_env_t *env,
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
     }
-    fifos.fifo3 = new FIFO<uint32_t,FIFOSIZE3,1,0>(buffers.buf2);
+    fifos.fifo3 = new FIFO<int8_t,FIFOSIZE3,1,0>(buffers.buf0);
     if (fifos.fifo3==NULL)
+    {
+        return(CG_MEMORY_ALLOCATION_FAILURE);
+    }
+    fifos.fifo4 = new FIFO<int8_t,FIFOSIZE4,1,0>(buffers.buf1);
+    if (fifos.fifo4==NULL)
+    {
+        return(CG_MEMORY_ALLOCATION_FAILURE);
+    }
+    fifos.fifo5 = new FIFO<uint32_t,FIFOSIZE5,1,0>(buffers.buf2);
+    if (fifos.fifo5==NULL)
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
     }
 
     CG_BEFORE_NODE_INIT;
-    nodes.jpeg = new JPEGEncoder<int8_t,230400,int8_t,76900,uint32_t,1>(*(fifos.fifo1),*(fifos.fifo2),*(fifos.fifo3),320,240);
+    nodes.Serial = new SendResult<int8_t,76900,uint32_t,1>(*(fifos.fifo4),*(fifos.fifo5),env,alg_result,alg_fm_result,320,240);
+    if (nodes.Serial==NULL)
+    {
+        return(CG_MEMORY_ALLOCATION_FAILURE);
+    }
+    nodes.canny = new CannyEdge<int8_t,153600,int8_t,76800>(*(fifos.fifo1),*(fifos.fifo2),320,240);
+    if (nodes.canny==NULL)
+    {
+        return(CG_MEMORY_ALLOCATION_FAILURE);
+    }
+    nodes.jpeg = new JPEGEncoder<int8_t,230400,int8_t,76900,uint32_t,1>(*(fifos.fifo3),*(fifos.fifo4),*(fifos.fifo5),320,240);
     if (nodes.jpeg==NULL)
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
@@ -216,13 +242,13 @@ int init_cv_scheduler(stream_env_t *env,
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
     }
-    nodes.rgb = new YUVToRGB<int8_t,115200,int8_t,230400>(*(fifos.fifo0),*(fifos.fifo1),320,240);
-    if (nodes.rgb==NULL)
+    nodes.to_gray = new YUVToGray16<int8_t,115200,int8_t,153600>(*(fifos.fifo0),*(fifos.fifo1),320,240);
+    if (nodes.to_gray==NULL)
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
     }
-    nodes.sink = new SendResult<int8_t,76900,uint32_t,1>(*(fifos.fifo2),*(fifos.fifo3),env,alg_result,alg_fm_result,320,240);
-    if (nodes.sink==NULL)
+    nodes.to_rgb = new Gray8ToRGB<int8_t,76800,int8_t,230400>(*(fifos.fifo2),*(fifos.fifo3),320,240);
+    if (nodes.to_rgb==NULL)
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
     }
@@ -251,7 +277,23 @@ void free_cv_scheduler(stream_env_t *env,
     {
        delete fifos.fifo3;
     }
+    if (fifos.fifo4!=NULL)
+    {
+       delete fifos.fifo4;
+    }
+    if (fifos.fifo5!=NULL)
+    {
+       delete fifos.fifo5;
+    }
 
+    if (nodes.Serial!=NULL)
+    {
+        delete nodes.Serial;
+    }
+    if (nodes.canny!=NULL)
+    {
+        delete nodes.canny;
+    }
     if (nodes.jpeg!=NULL)
     {
         delete nodes.jpeg;
@@ -260,13 +302,13 @@ void free_cv_scheduler(stream_env_t *env,
     {
         delete nodes.ov5647;
     }
-    if (nodes.rgb!=NULL)
+    if (nodes.to_gray!=NULL)
     {
-        delete nodes.rgb;
+        delete nodes.to_gray;
     }
-    if (nodes.sink!=NULL)
+    if (nodes.to_rgb!=NULL)
     {
-        delete nodes.sink;
+        delete nodes.to_rgb;
     }
 }
 
@@ -287,7 +329,7 @@ uint32_t cv_scheduler(int *error,stream_env_t *env,
     {
         /* Run a schedule iteration */
         CG_BEFORE_ITERATION;
-        for(unsigned long id=0 ; id < 4; id++)
+        for(unsigned long id=0 ; id < 6; id++)
         {
             CG_BEFORE_NODE_EXECUTION(schedule[id]);
 
@@ -295,25 +337,37 @@ uint32_t cv_scheduler(int *error,stream_env_t *env,
             {
                 case 0:
                 {
-                   cgStaticError = nodes.jpeg->run();
+                   cgStaticError = nodes.Serial->run();
                 }
                 break;
 
                 case 1:
                 {
-                   cgStaticError = nodes.ov5647->run();
+                   cgStaticError = nodes.canny->run();
                 }
                 break;
 
                 case 2:
                 {
-                   cgStaticError = nodes.rgb->run();
+                   cgStaticError = nodes.jpeg->run();
                 }
                 break;
 
                 case 3:
                 {
-                   cgStaticError = nodes.sink->run();
+                   cgStaticError = nodes.ov5647->run();
+                }
+                break;
+
+                case 4:
+                {
+                   cgStaticError = nodes.to_gray->run();
+                }
+                break;
+
+                case 5:
+                {
+                   cgStaticError = nodes.to_rgb->run();
                 }
                 break;
 

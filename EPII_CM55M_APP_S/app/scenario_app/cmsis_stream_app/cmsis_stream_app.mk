@@ -19,7 +19,7 @@ EVENTHANDLER_SUPPORT_LIST += evt_datapath
 # Add new library here
 # The source code should be loacted in ~\library\{lib_name}\
 ##
-LIB_SEL = pwrmgmt sensordp  spi_ptl spi_eeprom hxevent img_proc
+LIB_SEL = pwrmgmt sensordp  spi_ptl spi_eeprom hxevent img_proc cmsisdsp cmsiscv 
 
 ifeq ($(USE_NPU), 1)
 LIB_SEL += tflmtag2209_u55tag2205 
@@ -65,3 +65,5 @@ endif
 # The source code should be located in ~\external\{device_name}\
 ##
 #EXT_DEV_LIST += 
+
+	

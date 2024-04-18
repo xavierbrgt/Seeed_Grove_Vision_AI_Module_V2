@@ -13,6 +13,8 @@ activateType = CType(UINT32)
 class CImageType(CGStaticType):
     YUV = 1
     RGB = 2
+    GRAY16 = 3
+    GRAY8 = 4
 
     def __init__(self,w,h,t=YUV):
         CGStaticType.__init__(self)
@@ -57,6 +59,10 @@ class CImageType(CGStaticType):
            return(int(1.5*self._w*self._h))
         if self._pixel_type == CImageType.RGB:
            return(int(3*self._w*self._h))
+        if self._pixel_type == CImageType.GRAY16:
+           return(int(2*self._w*self._h))
+        if self._pixel_type == CImageType.GRAY8:
+           return(int(self._w*self._h))
 
     @property
     def ctype(self):
@@ -68,6 +74,10 @@ class CImageType(CGStaticType):
            return(escape(f"YUV_{self.width}_{self.height}"))
         if self.format == CImageType.RGB:
            return(escape(f"RGB_{self.width}_{self.height}"))
+        if self.format == CImageType.GRAY16:
+           return(escape(f"GRAY16_{self.width}_{self.height}"))
+        if self.format == CImageType.GRAY8:
+           return(escape(f"GRAY8_{self.width}_{self.height}"))
 
 
 class SendResult(GenericSink):
@@ -206,6 +216,71 @@ class YUVToRGB(GenericNode):
     def typeName(self):
         """The name of the C++ class implementing this node"""
         return "YUVToRGB"
+
+class YUVToGray16(GenericNode):
+    def __init__(self,name,w,h):
+        GenericSink.__init__(self,name)
+        src_t = CImageType(w,h,CImageType.YUV)
+        dst_t = CImageType(w,h,CImageType.GRAY16)
+
+        self.addInput("i",src_t,src_t._nb_bytes)
+        self.addOutput("o",dst_t,dst_t._nb_bytes)
+        self.addLiteralArg(w)
+        self.addLiteralArg(h)
+        
+    @property
+    def typeName(self):
+        """The name of the C++ class implementing this node"""
+        return "YUVToGray16"
+
+
+class Gray16ToRGB(GenericNode):
+    def __init__(self,name,w,h):
+        GenericSink.__init__(self,name)
+        src_t = CImageType(w,h,CImageType.GRAY16)
+        dst_t = CImageType(w,h,CImageType.RGB)
+
+        self.addInput("i",src_t,src_t._nb_bytes)
+        self.addOutput("o",dst_t,dst_t._nb_bytes)
+        self.addLiteralArg(w)
+        self.addLiteralArg(h)
+        
+    @property
+    def typeName(self):
+        """The name of the C++ class implementing this node"""
+        return "Gray16ToRGB"
+
+class Gray8ToRGB(GenericNode):
+    def __init__(self,name,w,h):
+        GenericSink.__init__(self,name)
+        src_t = CImageType(w,h,CImageType.GRAY8)
+        dst_t = CImageType(w,h,CImageType.RGB)
+
+        self.addInput("i",src_t,src_t._nb_bytes)
+        self.addOutput("o",dst_t,dst_t._nb_bytes)
+        self.addLiteralArg(w)
+        self.addLiteralArg(h)
+        
+    @property
+    def typeName(self):
+        """The name of the C++ class implementing this node"""
+        return "Gray8ToRGB"
+
+class CannyEdge(GenericNode):
+    def __init__(self,name,w,h):
+        GenericSink.__init__(self,name)
+        src_t = CImageType(w,h,CImageType.GRAY16)
+        dst_t = CImageType(w,h,CImageType.GRAY8)
+
+        self.addInput("i",src_t,src_t._nb_bytes)
+        self.addOutput("o",dst_t,dst_t._nb_bytes)
+        self.addLiteralArg(w)
+        self.addLiteralArg(h)
+        
+    @property
+    def typeName(self):
+        """The name of the C++ class implementing this node"""
+        return "CannyEdge"
 
 class JPEGEncoder(GenericNode):
     def __init__(self,name,w,h):

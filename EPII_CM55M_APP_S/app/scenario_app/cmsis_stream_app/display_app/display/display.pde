@@ -30,6 +30,7 @@ void setup() {
 }
 
 void draw() {
+  JSONArray click=null;
   while (myPort.available() > 0) {
     myString = myPort.readStringUntil(lf);
     if (myString != null) {
@@ -37,6 +38,8 @@ void draw() {
         try {
           if (myString.charAt(1)=='{')
           {
+            background(0);
+  fill(255,255,255);
           JSONObject json = parseJSONObject(myString);
           if (json!=null)
           {
@@ -44,7 +47,7 @@ void draw() {
              JSONObject data = json.getJSONObject("data");
              if (data != null)
              {
-              
+               click = data.getJSONArray("algo_tick");
                String image = data.getString("image");
                if (image != null)
                {
@@ -58,7 +61,7 @@ void draw() {
                  image(p, 0, 0);
                } 
                
-               JSONArray click = data.getJSONArray("algo_tick");
+               
                if (click != null)
                {
                  float ms = 1.0*click.getJSONArray(0).getInt(0)/freq*1000;
@@ -72,10 +75,15 @@ void draw() {
           }
         }
         catch (RuntimeException e) {
+          //text("Err:" + e.toString() ,5,80);
         }
         catch(IOException ioe)
         {
-        }
+        //  background(0);
+        //  fill(255,255,255);
+         
+        //   text("Err:" + ioe.toString() ,5,80);
+       }
     }
   }
 }
