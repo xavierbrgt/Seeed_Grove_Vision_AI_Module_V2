@@ -1,6 +1,4 @@
 #include "gaussian.h"
-#include <stdio.h>
-//#include "defines.h"
 q15_t grad[9] = {   0x0800, 0x1000, 0x0800,
                     0x1000, 0x2000, 0x1000,
                     0x0800, 0x1000, 0x0800

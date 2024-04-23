@@ -17,10 +17,17 @@ ov5647 [label=<
   </TR>
 </TABLE>>];
 
-to_gray [label=<
+to_gray8 [label=<
 <TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">to_gray<BR/>(YUVToGray16)</FONT></TD>
+    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">to_gray8<BR/>(YUVToGray8)</FONT></TD>
+  </TR>
+</TABLE>>];
+
+gaussian [label=<
+<TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">gaussian<BR/>(GaussianFilter)</FONT></TD>
   </TR>
 </TABLE>>];
 
@@ -44,12 +51,12 @@ jpeg [label=<
   <TR>
     <TD PORT="i"><FONT POINT-SIZE="12.0" COLOR="black">i</FONT></TD>
     <TD ALIGN="CENTER" ROWSPAN="2"><FONT COLOR="black" POINT-SIZE="14.0">jpeg<BR/>(JPEGEncoder)</FONT></TD>
-    <TD PORT="jpeg"><FONT POINT-SIZE="12.0" COLOR="black">jpeg</FONT></TD>
+    <TD PORT="l"><FONT POINT-SIZE="12.0" COLOR="black">l</FONT></TD>
   </TR>
 <TR>
  
 <TD></TD>
-<TD PORT="l"><FONT POINT-SIZE="12.0" COLOR="black">l</FONT></TD>
+<TD PORT="o"><FONT POINT-SIZE="12.0" COLOR="black">o</FONT></TD>
 </TR>
 
 </TABLE>>];
@@ -72,13 +79,19 @@ Serial [label=<
 
 
 
-ov5647:i -> to_gray:i [style="solid",color="black",label=""
+ov5647:i -> to_gray8:i [style="solid",color="black",label=""
 ,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >115200</FONT>
 </TD></TR></TABLE>>
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >115200</FONT>
 </TD></TR></TABLE>>]
 
-to_gray:i -> canny:i [style="solid",color="black",label=""
+to_gray8:i -> gaussian:i [style="solid",color="black",label=""
+,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >76800</FONT>
+</TD></TR></TABLE>>
+,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >76800</FONT>
+</TD></TR></TABLE>>]
+
+gaussian:i -> canny:i [style="solid",color="black",label=""
 ,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >153600</FONT>
 </TD></TR></TABLE>>
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >153600</FONT>
@@ -96,7 +109,7 @@ to_rgb:i -> jpeg:i [style="solid",color="black",label=""
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >230400</FONT>
 </TD></TR></TABLE>>]
 
-jpeg:jpeg -> Serial:jpeg [style="solid",color="black",label=""
+jpeg:o -> Serial:jpeg [style="solid",color="black",label=""
 ,headlabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >76900</FONT>
 </TD></TR></TABLE>>
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >76900</FONT>

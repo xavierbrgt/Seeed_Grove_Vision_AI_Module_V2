@@ -94,7 +94,7 @@
 static uint8_t 	g_xdma_abnormal, g_md_detect, g_cdm_fifoerror, g_wdt1_timeout, g_wdt2_timeout,g_wdt3_timeout;
 static uint8_t 	g_hxautoi2c_error, g_inp1bitparer_abnormal;
 static uint32_t g_dp_event;
-static uint8_t 	g_frame_ready;
+uint8_t 	g_frame_ready;
 static uint32_t g_cur_jpegenc_frame;
 static uint8_t 	g_time;
 static uint8_t g_spi_master_initial_status;
@@ -107,6 +107,7 @@ static uint32_t g_trans_type;
 static uint32_t judge_case_data;
 
 static stream_env_t stream_env;
+static cv_scheduler_cb_t cv_scheduler_state;
 
 void app_start_state(APP_STATE_E state);
 void pinmux_init();
@@ -390,7 +391,7 @@ static void dp_app_cv_fd_fm_eventhdl_cb(EVT_INDEX_E event)
 
 	if(g_frame_ready == 1)
 	{
-		g_frame_ready = 0;
+		//g_frame_ready = 0;
 		
 		hx_drv_watchdog_update(WATCHDOG_ID_0, WATCH_DOG_TIMEOUT_TH);
 
@@ -442,12 +443,9 @@ static void dp_app_cv_fd_fm_eventhdl_cb(EVT_INDEX_E event)
 	g_trans_type = (judge_case_data>>16);
 	if( g_trans_type == 0 )// transfer type is (UART) 
 	{
-		#if !defined(ORIGINAL_APP)
 		int error;
-		(void)cv_scheduler(&error,&stream_env,&algoresult, &algoresult_fm);
-        #else
-		cv_fd_fm_run(&stream_env,&algoresult, &algoresult_fm);
-		#endif
+		(void)cv_scheduler(&error,&cv_scheduler_state,&stream_env,&algoresult, &algoresult_fm);
+        
 #ifdef CIS_IMX
 		hx_drv_scu_get_version(&chipid, &version);
 		if (chipid == WE2_CHIP_VERSION_C)   // mipi workaround for WE2 chip version C
@@ -462,12 +460,9 @@ static void dp_app_cv_fd_fm_eventhdl_cb(EVT_INDEX_E event)
 		#if TOTAL_STEP_TICK
 			SystemGetTick(&stream_env->systick_1, &stream_env->loop_cnt_1);
 		#endif
-			#if !defined(ORIGINAL_APP)
 		    int error;
-		    (void)cv_scheduler(&error,&stream_env,&algoresult, &algoresult_fm);
-            #else
-		    cv_fd_fm_run(&stream_env,&algoresult, &algoresult_fm);
-		    #endif
+		    (void)cv_scheduler(&error,&cv_scheduler_state,&stream_env,&algoresult, &algoresult_fm);
+            
 #ifdef CIS_IMX
 		hx_drv_scu_get_version(&chipid, &version);
 		if (chipid == WE2_CHIP_VERSION_C)   // mipi workaround for WE2 chip version C
@@ -496,12 +491,9 @@ static void dp_app_cv_fd_fm_eventhdl_cb(EVT_INDEX_E event)
 	#if TOTAL_STEP_TICK
 			SystemGetTick(&stream_env->systick_1, &stream_env->loop_cnt_1);
 	#endif
-			#if !defined(ORIGINAL_APP)
 		    int error;
 		    (void)cv_scheduler(&error,&stream_env,&algoresult, &algoresult_fm);
-            #else
-		    cv_fd_fm_run(&stream_env,&algoresult, &algoresult_fm);
-		    #endif
+            
 #ifdef CIS_IMX
 		hx_drv_scu_get_version(&chipid, &version);
 		if (chipid == WE2_CHIP_VERSION_C)   // mipi workaround for WE2 chip version C
@@ -650,6 +642,7 @@ void app_start_state(APP_STATE_E state)
 	}
 #endif
 
+    init_cb_state_cv_scheduler(&cv_scheduler_state);
 	int err = init_buffer_cv_scheduler(&stream_env,&algoresult, &algoresult_fm);
 	if (err == CG_MEMORY_ALLOCATION_FAILURE)
 	{

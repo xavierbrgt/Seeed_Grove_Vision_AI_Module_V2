@@ -1,11 +1,11 @@
 #include "canny_edge.h"
-#include <stdio.h>
-//#include "defines.h"
-//Thining function for float16
+//Thining function for q15
 void arm_thining_angle_in_out_q15_u8_proc_q15(const arm_image_sobel_q15_t* ImageIn, arm_image_u8_t* ImageWeakStrong)
 {
+    //two value of threshold for decision on pixels, hard coded but should be passed as argument
     int low_threshold = (int)(2528);//0.3*255<<5
     int high_threshold = (int)(5728);//0.7*255<<5  //5664
+    //Loop to run thought all the image
     for( int x = 0; x < ImageIn->numRows; x++)
     {
         for( int y =0; y < ImageIn->numCols; y++)
@@ -15,6 +15,9 @@ void arm_thining_angle_in_out_q15_u8_proc_q15(const arm_image_sobel_q15_t* Image
             if(ImageIn->pSobelPixel[indice].mag !=0)
             {
                 int valuein = ImageIn->pSobelPixel[indice].mag;
+                //the angle allow us to determine what are the two magnitude value we need to first compare with
+                //then we make a decision on keeping the pixel base on the threshold, if the magnitude value supass the high threshold we keep it
+                //else we need to check the 3x3 suqare around the value to see if its an edge or not
                 switch (ImageIn->pSobelPixel[indice].angle)
                 {
                 case Horizontal:
@@ -152,17 +155,22 @@ void arm_hysteresis_in_q15_out_q15_proc_q15(const arm_image_sobel_q15_t* ImageIn
 //Thining function for float16
 void arm_thining_angle_in_f16_out_u8_proc_f16(const arm_image_sobel_f16_t* ImageIn, arm_image_u8_t* ImageWeakStrong)
 {
+    //two value of threshold for decision on pixels, hard coded but should be passed as argument
     int low_threshold = (int)(79);
     int high_threshold = (int)(179);
+    //Loop to run thought all the image
     for( int x = 0; x < ImageIn->numRows; x++)
     {
         for( int y =0; y < ImageIn->numCols; y++)
         {
             int indice = x*ImageIn->numCols+y;
             int w = ImageIn->numCols;
-            if((float)ImageIn->pSobelPixel[indice].mag != (float)0.0)
+            if((float)ImageIn->pSobelPixel[indice].mag > low_threshold/*!= (float)0.0*/)
             {
                 float valuein = (float)ImageIn->pSobelPixel[indice].mag;
+                //the angle allow us to determine what are the two magnitude value we need to first compare with
+                //then we make a decision on keeping the pixel base on the threshold, if the magnitude value supass the high threshold we keep it
+                //else we need to check the 3x3 suqare around the value to see if its an edge or not
                 switch ((int)ImageIn->pSobelPixel[indice].angle)
                 {
                 case Horizontal:
@@ -173,11 +181,11 @@ void arm_thining_angle_in_f16_out_u8_proc_f16(const arm_image_sobel_f16_t* Image
                     }
                     else
                     {
-                        if( (float)ImageIn->pSobelPixel[indice].mag < low_threshold)
+                        /*if( (float)ImageIn->pSobelPixel[indice].mag < low_threshold)
                         {
                             ImageWeakStrong->pData[indice] = Low;
                         }
-                        else if((float)ImageIn->pSobelPixel[indice].mag < high_threshold)
+                        else*/ if((float)ImageIn->pSobelPixel[indice].mag < high_threshold)
                         {
                             ImageWeakStrong->pData[indice] = Weak;
                         }
@@ -194,11 +202,11 @@ void arm_thining_angle_in_f16_out_u8_proc_f16(const arm_image_sobel_f16_t* Image
                     }
                     else
                     {
-                        if( (float)ImageIn->pSobelPixel[indice].mag < low_threshold)
+                        /*if( (float)ImageIn->pSobelPixel[indice].mag < low_threshold)
                         {
                             ImageWeakStrong->pData[indice] = Low;
                         }
-                        else if((float)ImageIn->pSobelPixel[indice].mag < high_threshold)
+                        else*/ if((float)ImageIn->pSobelPixel[indice].mag < high_threshold)
                         {
                             ImageWeakStrong->pData[indice] = Weak;
                         }
@@ -215,11 +223,11 @@ void arm_thining_angle_in_f16_out_u8_proc_f16(const arm_image_sobel_f16_t* Image
                     }
                     else
                     {
-                        if( (float)ImageIn->pSobelPixel[indice].mag < low_threshold)
+                        /*if( (float)ImageIn->pSobelPixel[indice].mag < low_threshold)
                         {
                             ImageWeakStrong->pData[indice] = Low;
                         }
-                        else if((float)ImageIn->pSobelPixel[indice].mag < high_threshold)
+                        else*/ if((float)ImageIn->pSobelPixel[indice].mag < high_threshold)
                         {
                             ImageWeakStrong->pData[indice] = Weak;
                         }
@@ -236,11 +244,11 @@ void arm_thining_angle_in_f16_out_u8_proc_f16(const arm_image_sobel_f16_t* Image
                     }
                     else
                     {
-                        if( (float)ImageIn->pSobelPixel[indice].mag < low_threshold)//define a macro for this could be usefull
+                        /*if( (float)ImageIn->pSobelPixel[indice].mag < low_threshold)//define a macro for this could be usefull
                         {
                             ImageWeakStrong->pData[indice] = Low;
                         }
-                        else if((float)ImageIn->pSobelPixel[indice].mag < high_threshold)
+                        else*/ if((float)ImageIn->pSobelPixel[indice].mag < high_threshold)
                         {
                             ImageWeakStrong->pData[indice] = Weak;
                         }

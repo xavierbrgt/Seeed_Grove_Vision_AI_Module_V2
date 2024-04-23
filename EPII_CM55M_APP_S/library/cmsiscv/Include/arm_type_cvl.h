@@ -1,5 +1,11 @@
 #ifndef _ARM_TYPE_CVL_
 #define _ARM_TYPE_CVL_
+
+#ifdef   __cplusplus
+extern "C"
+{
+#endif
+
 #if !defined(ARM_MATH_MVEI)
 typedef float float16_t;
 #endif
@@ -136,11 +142,11 @@ uint16_t y;
  * @return 
  *
  */
-typedef struct arm_buffer_2_u6 {
+typedef struct arm_buffer_2_u16 {
     divergence_t* pData;
     int16_t numCols;
     int16_t numRows;
-} arm_buffer_2_u6_t;
+} arm_buffer_2_u16_t;
 
 /**
  * @brief   Structure for a pixel of a buffer with two composant in q15
@@ -191,4 +197,10 @@ typedef struct arm_buffer_2_q31{
   int16_t numCols;
   int16_t numRows;
 } arm_buffer_2_q31_t;
+
+#ifdef   __cplusplus
+}
 #endif
+
+#endif
+

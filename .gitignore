@@ -1,0 +1,22 @@
+*.bat
+obj_epii_evb_icv30_bdv10/
+EPII_CM55M_APP_S/prebuilt_libs/gnu/libcmsiscv.a
+EPII_CM55M_APP_S/prebuilt_libs/gnu/libcmsisdsp.a
+EPII_CM55M_APP_S/prebuilt_libs/gnu/libcommon.a
+EPII_CM55M_APP_S/prebuilt_libs/gnu/libtflmtag2209_u55tag2205_gnu.a
+EPII_CM55M_APP_S/prebuilt_libs/gnu/libtrustzone_cfg.a
+model_zoo/*/*.bin
+*.exe
+REF_Seeed_SenseCraft AI - 2023-12-19T183401.402.img
+we2_image_gen_local/Images.txt
+we2_image_gen_local/Images_ForSendData.txt
+we2_image_gen_local/input_case1_secboot/EPII_CM55M_gnu_epii_evb_WLCSP65_s.elf
+we2_image_gen_local/input_case1_secboot/EPII_CM55M_gnu_epii_evb_WLCSP65_s.map
+we2_image_gen_local/output_case1_sec_wlcsp/
+we2_image_gen_local/arm-none-eabi-objcopy
+we2_image_gen_local/arm-none-eabi-objdump
+we2_image_gen_local/secureboot_tool/cert/ICVSBContent.crt
+we2_image_gen_local/secureboot_tool/cert/ICVSBContent_Cert.txt
+we2_image_gen_local/secureboot_tool/cert/Images.txt
+we2_image_gen_local/secureboot_tool/sb_content_cert.log
+

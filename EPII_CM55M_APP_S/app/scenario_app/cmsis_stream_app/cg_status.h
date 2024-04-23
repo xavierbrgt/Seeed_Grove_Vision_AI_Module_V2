@@ -46,9 +46,10 @@ are not used by the core nodes.
     CG_SKIP_EXECUTION             = -5, /**< Skip node execution (asynchronous mode) */
     CG_BUFFER_ERROR               = -6, /**< Stop execution due to FIFO overflow or underflow (asynchronous mode for pure function) */
     CG_OS_ERROR                   = -7, /**< RTOS API error */
-    CG_STOP_SCHEDULER             = -8,  /**< Stop scheduling */
-    CG_TF_LITE_ERROR              = -9,
-    CG_JPEG_ERROR              = -10
+    CG_STOP_SCHEDULER             = -8, /**< Stop scheduling */
+    CG_PAUSE_SCHEDULER            = -9,  /**< Pause scheduler in callback mode */
+    CG_TF_LITE_ERROR              = -10,
+    CG_JPEG_ERROR                 = -11
   } cg_status;
 
 

@@ -2,22 +2,22 @@ from subprocess import run
 # Include definition of the nodes
 from nodes import * 
 # Include definition of the graph
-#from graph import * 
+#from stream_only_graph import * 
 #
-from complex_graph import * 
+from canny_edge_graph import * 
+
+#from face_mesh_graph import * 
 
 from cmsis_stream.cg.yaml import *
 
 # Create a configuration object
 conf=Configuration()
-# The number of schedule iteration is limited to 1
-# to prevent the scheduling from running forever
-# (which should be the case for a stream computation)
-conf.debugLimit=1
 # Disable inclusion of CMSIS-DSP headers so that we don't have
 # to recompile CMSIS-DSP for such a simple example
 conf.CMSISDSP = False
 conf.asynchronous = False
+conf.callback = True
+conf.heapAllocation = True
 
 # Argument of the scheduler function.
 # Variables used in the initialization of some nodes
@@ -34,7 +34,6 @@ conf.prefix="cv_"
 # Name of scheduler function
 conf.schedName="cv_scheduler"
 conf.bufferAllocation = True
-conf.heapAllocation = True
 conf.memoryOptimization = True 
 conf.horizontal = True 
 
@@ -68,10 +67,16 @@ generateGenericNodes(".")
 # cg_status.h is created in the folder "generated"
 #generateCGStatus(".")
 
+class MyStyle(Style):
+    def edge_label(self,fifo,typeName,length):
+        #return f"{typeName}<BR/>({length})"
+        return f"{typeName}"
+
+myStyle = MyStyle()
 
 # Generate a graphviz representation of the graph
 with open("cv.dot","w") as f:
-    scheduling.graphviz(f,config=conf)
+    scheduling.graphviz(f,config=conf,style=myStyle)
 
 run(["dot.exe","-Tpdf","-o","cv.pdf","cv.dot"])
 run(["touch.exe","cmsis_stream_app.c"])

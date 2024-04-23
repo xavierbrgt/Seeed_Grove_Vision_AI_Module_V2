@@ -1,8 +1,58 @@
 //#include "arm_math_types.h"
 #include "sobel.h"
-#include <stdio.h>
 #include <stdlib.h>
-//#include "defines.h"
+#define ATAN_SIMPLE
+#ifdef ATAN_SIMPLE
+int atan_simplify(int x, int y);
+int atan_simplify(int x, int y)
+{
+	float last = 5.02733949213;			//tan(7pi/16)
+	float half_up = 1.49660576267;		//tan(5pi/16)
+	float half = 0.66817863791;			//tan(3pi/16)
+	float half_down = 0.19891236738;	//tan(pi/16)
+	/*int lim = 0
+	int same as negatives*/
+	//atan(x/abs(y))
+
+	float ratio = abs(x/y);
+	if(ratio<half_down)
+	{
+		return(0);
+	}
+	else if(ratio<half)
+	{
+		return(45);
+	}
+	else if(ratio<half_up)
+	{
+		return(90);
+	}
+	else if(ratio<last)
+	{
+		return(135);
+	}
+	else
+	{
+		return(0);
+	}
+}
+#endif
+#define INVSQRT_MAGIC_F16           0x59ba      /*  ( 0x1ba = 0x3759df >> 13) */
+
+/* canonical version of INVSQRT_NEWTON_MVE_F16 leads to bad performance */
+#define INVSQRT_NEWTON_MVE_F16(invSqrt, xHalf, xStart)                  \
+{                                                                       \
+    float16x8_t tmp;                                                      \
+                                                                        \
+    /* tmp = xhalf * x * x */                                           \
+    tmp = vmulq(xStart, xStart);                                        \
+    tmp = vmulq(tmp, xHalf);                                            \
+    /* (1.5f - xhalf * x * x) */                                        \
+    tmp = vsubq(vdupq_n_f16((float16_t)1.5), tmp);                      \
+    /* x = x*(1.5f-xhalf*x*x); */                                       \
+    invSqrt = vmulq(tmp, xStart);                                       \
+}
+
 //sobel function for f16
 void arm_sobel_in_u8_out_f16_proc_f16(const arm_image_gray_u8_t* ImageIn, arm_image_sobel_f16_t* ImageOut)
 {
@@ -43,17 +93,7 @@ void arm_sobel_in_u8_out_f16_proc_f16(const arm_image_gray_u8_t* ImageIn, arm_im
 			}
 			else if(tan< (float)(22+45))
 			{
-				if(gradx<0)
-				{
-					ImageOut->pSobelPixel[x*ImageIn->numCols+y].angle = Diagonal_lr;
-				}
-				else
-				{
-					ImageOut->pSobelPixel[x*ImageIn->numCols+y].angle = Diagonal_rl;
-				}
-				#ifdef BUGMVALLOW
 				ImageOut->pSobelPixel[x*ImageIn->numCols+y].angle = Diagonal_rl;
-				#endif
 			}
 			else if(tan< (float)(22+90))
 			{
@@ -62,17 +102,7 @@ void arm_sobel_in_u8_out_f16_proc_f16(const arm_image_gray_u8_t* ImageIn, arm_im
 			}
 			else if(tan< (float)(160))//22+135))
 			{
-				if(gradx<0)
-				{
-					ImageOut->pSobelPixel[x*ImageIn->numCols+y].angle = Diagonal_rl;
-				}
-				else
-				{
-					ImageOut->pSobelPixel[x*ImageIn->numCols+y].angle = Diagonal_lr;
-				}
-				#ifdef BUGMVALLOW
 				ImageOut->pSobelPixel[x*ImageIn->numCols+y].angle = Diagonal_lr;
-				#endif
 			}
 			else
 			{
@@ -165,17 +195,7 @@ void arm_sobel_in_q15_out_q15_proc_q15( const arm_image_gray_q15_t* ImageIn, arm
             }
             else if((out_tan & 0x7FFF) < (0x256C))//67 in rad in 2.13
             {
-                if((grady&0x8000)>>15)
-				{
-					ImageOut->pSobelPixel[indice].angle = Diagonal_lr;
-				}
-				else
-				{
-					ImageOut->pSobelPixel[indice].angle = Diagonal_rl;
-				}
-				#ifdef BUGMVALLOW
 				ImageOut->pSobelPixel[indice].angle = Diagonal_rl;
-				#endif
             }
             else if((out_tan & 0x7FFF) < (0x3E8E))//112 in rad in 2.13
             {
@@ -183,17 +203,7 @@ void arm_sobel_in_q15_out_q15_proc_q15( const arm_image_gray_q15_t* ImageIn, arm
             }
             else if((out_tan & 0x7FFF) < (0x595C))//160 in rad in 2.13
             {
-				if((grady&0x8000)>>15)
-				{
-					ImageOut->pSobelPixel[indice].angle = Diagonal_rl;
-				}
-				else
-				{
-					ImageOut->pSobelPixel[indice].angle = Diagonal_lr;
-				}
-				#ifdef BUGMVALLOW
 				ImageOut->pSobelPixel[indice].angle = Diagonal_lr;
-				#endif
 			}
             else//case tan between 135+22.5 and 180
             {
@@ -294,17 +304,7 @@ void arm_sobel_in_q15_out_q15_proc_q15_buff( const arm_image_gray_q15_t* ImageIn
             }
             else if((out_tan ) < (0x256C))//67 in rad in 2.13
             {
-                if((gradx&0x8000)>>15)
-				{
-					ImageOut->pSobelPixel[indice].angle = Diagonal_lr;
-				}
-				else
-				{
-					ImageOut->pSobelPixel[indice].angle = Diagonal_rl;
-				}
-				#ifdef BUGMVALLOW
 				ImageOut->pSobelPixel[indice].angle = Diagonal_rl;
-				#endif
             }
             else if((out_tan ) < (0x3E8E))//112 in rad in 2.13
             {
@@ -312,17 +312,7 @@ void arm_sobel_in_q15_out_q15_proc_q15_buff( const arm_image_gray_q15_t* ImageIn
             }
             else if((out_tan ) < (0x595C))//160 in rad in 2.13
             {
-				if((gradx&0x8000)>>15)
-				{
-					ImageOut->pSobelPixel[indice].angle = Diagonal_rl;
-				}
-				else
-				{
-					ImageOut->pSobelPixel[indice].angle = Diagonal_lr;
-				}
-				#ifdef BUGMVALLOW
 				ImageOut->pSobelPixel[indice].angle = Diagonal_lr;
-				#endif
 			}
             else//case tan between 135+22.5 and 180
             {
@@ -515,22 +505,8 @@ void arm_sobel_in_q15_out_q15_proc_q15_buff( const arm_image_gray_q15_t* ImageIn
             	}
             	else if((out_tan ) < (0x256C))//67 in rad in 2.13
             	{
-            	    if((vectgradx[j]&0x8000)>>15)
-					{
-						vect_res_2[j] = Diagonal_lr;
-						#ifdef BUGMVALLOW
-						vect_res_2[j] = Diagonal_rl;
-						#endif
-						continue;
-					}
-					else
-					{
-						vect_res_2[j]= Diagonal_rl;
-						#ifdef BUGMVALLOW
-						vect_res_2[j] = Diagonal_rl;
-						#endif
-						continue;
-					}
+					vect_res_2[j] = Diagonal_rl;
+					continue;
             	}
             	else if((out_tan) < (0x3E8E))//112 in rad in 2.13
             	{
@@ -539,22 +515,8 @@ void arm_sobel_in_q15_out_q15_proc_q15_buff( const arm_image_gray_q15_t* ImageIn
 				}
             	else if((out_tan) < (0x595C))//160 in rad in 2.13
             	{
-					if((vectgradx[j]&0x8000)>>15)
-					{
-						vect_res_2[j] = Diagonal_rl;
-						#ifdef BUGMVALLOW
-						vect_res_2[j] = Diagonal_lr;
-						#endif
-						continue;
-					}
-					else
-					{
-						vect_res_2[j] = Diagonal_lr;
-						#ifdef BUGMVALLOW
-						vect_res_2[j] = Diagonal_lr;
-						#endif
-						continue;
-					}
+					vect_res_2[j] = Diagonal_lr;
+					continue;
 				}
             	else//case tan between 135+22.5 and 180
             	{
@@ -589,19 +551,8 @@ void arm_sobel_in_q15_out_q15_proc_q15_buff( const arm_image_gray_q15_t* ImageIn
 				}
             	else if((out_tan) < (0x256C))//67 in rad in 2.13
             	{
-            	    if((vectgradx[j]&0x8000)>>15)
-					{
-						vect_res_2[j] = Diagonal_lr;
-						continue;
-					}
-					else
-					{
-						vect_res_2[j]= Diagonal_rl;
-						continue;
-					}
-					#ifdef BUGMVALLOW
 					vect_res_2[j] = Diagonal_rl;
-					#endif
+					continue;
             	}
             	else if((out_tan) < (0x3E8E))//112 in rad in 2.13
             	{
@@ -610,19 +561,8 @@ void arm_sobel_in_q15_out_q15_proc_q15_buff( const arm_image_gray_q15_t* ImageIn
 				}
             	else if((out_tan) < (0x595C))//160 in rad in 2.13
             	{
-					if((vectgradx[j]&0x8000)>>15)
-					{
-						vect_res_2[j] = Diagonal_rl;
-						continue;
-					}
-					else
-					{
-						vect_res_2[j] = Diagonal_lr;
-						continue;
-					}
-					#ifdef BUGMVALLOW
 					vect_res_2[j] = Diagonal_lr;
-					#endif
+					continue;
 				}
             	else//case tan between 135+22.5 and 180
             	{
@@ -697,19 +637,8 @@ void arm_sobel_in_q15_out_q15_proc_q15_buff( const arm_image_gray_q15_t* ImageIn
             	}
             	else if((out_tan) < (0x256C))//67 in rad in 2.13
             	{
-            	    if((gradx&0x8000)>>15)
-					{
-						ImageOut->pSobelPixel[indice].angle = Diagonal_lr;
-						continue;
-					}
-					else
-					{
-						ImageOut->pSobelPixel[indice].angle = Diagonal_rl;
-						continue;
-					}
-					#ifdef BUGMVALLOW
 					ImageOut->pSobelPixel[indice].angle = Diagonal_rl;
-					#endif 
+					continue;
             	}
             	else if((out_tan) < (0x3E8E))//112 in rad in 2.13
             	{
@@ -718,19 +647,8 @@ void arm_sobel_in_q15_out_q15_proc_q15_buff( const arm_image_gray_q15_t* ImageIn
 				}
             	else if((out_tan) < (0x595C))//160 in rad in 2.13
             	{
-					if((gradx&0x8000)>>15)
-					{
-						ImageOut->pSobelPixel[indice].angle = Diagonal_rl;
-						continue;
-					}
-					else
-					{
-						ImageOut->pSobelPixel[indice].angle = Diagonal_lr;
-						continue;
-					}
-					#ifdef BUGMVALLOW
 					ImageOut->pSobelPixel[indice].angle = Diagonal_lr;
-					#endif 
+					continue;
 				}
             	else//case tan between 135+22.5 and 180
             	{
@@ -744,7 +662,7 @@ void arm_sobel_in_q15_out_q15_proc_q15_buff( const arm_image_gray_q15_t* ImageIn
 #endif
 #if ((!defined(ARM_MATH_MVEI)) |(defined(FORCE_SCALAR)))
 //sobel function for f16 using a buffer to avoid repetition of computation Scalar Version
-void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, arm_image_sobel_f16_t* ImageOut, arm_buffer_2_u6_t* Img_tmp)
+void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, arm_image_sobel_f16_t* ImageOut, arm_buffer_2_u16_t* Img_tmp)
 {
 	int size_x = 240;
 	int size_y = 320;
@@ -802,17 +720,8 @@ void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, a
 				}
 				else if(tan <(float)(-20))
 				{
-					if(gradx<0)
-					{
-						ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_rl;
-					}
-					else
-					{
-						ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_lr;
-					}
-					#ifdef BUGMVALLOW
 					ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_lr;
-					#endif
+					continue;
 				}
 				else
 				{
@@ -821,17 +730,8 @@ void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, a
 			}
 			else if(tan <(float)(67))
 			{
-				if(gradx<0)
-				{
-					ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_lr;
-				}
-				else
-				{
-					ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_rl;
-				}
-				#ifdef BUGMVALLOW
 				ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_rl;
-				#endif
+				continue;
 			}
 			else
 			{
@@ -870,17 +770,8 @@ void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, a
 			}
 			else if(tan <(float)(-20))
 			{
-				if(gradx<0)
-				{
-					ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_rl;
-				}
-				else
-				{
-					ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_lr;
-				}
-				#ifdef BUGMVALLOW
 				ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_lr;
-				#endif
+				continue;
 			}
 			else
 			{
@@ -889,17 +780,8 @@ void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, a
 		}
 		else if(tan <(float)(67))
 		{
-			if(gradx<0)
-			{
-				ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_lr;
-			}
-			else
-			{
-				ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_rl;
-			}
-			#ifdef BUGMVALLOW
 			ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_rl;
-			#endif
+			continue;
 		}
 		else
 		{
@@ -931,11 +813,12 @@ void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, a
 }
 #else
 //sobel function for f16 using a buffer to avoid repetition of computation vector Version
-void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, arm_image_sobel_f16_t* ImageOut, arm_buffer_2_u6_t* Img_tmp)
+#if 1//(!defined SQRT_ATAN_VECT)
+void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, arm_image_sobel_f16_t* ImageOut, arm_buffer_2_u16_t* Img_tmp)
 {
 	int size_x = 240;
 	int size_y = 320;
-	int16_t gradx;
+	//int16_t gradx;
 	//int16_t grady;
 	ImageOut->numRows = ImageIn->numRows;
 	int numtail = (ImageIn->numCols-1)%8;
@@ -1062,7 +945,7 @@ void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, a
 			for(int i = 0; i< 8; i++)
 			{
 				//vect for grad
-				gradx = vectgradx[i];
+				//gradx = vectgradx[i];
 				//magnitude
 				
 				//VERY IMPORTANT PIECE OF CODE
@@ -1083,6 +966,338 @@ void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, a
 				{
 					vect_res_1[i] = sqrtf(vect_gradx_1[i>>1]);
 				}
+				/*float tan*/ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y+i].angle = atan_simplify(/*gradx/abs(grady))*(180/PI_F64)*/vectgradx[i],vectgrady[i]);
+				/*if(tan < (float)(22))
+				{
+					if(tan < (float)(-68))
+					{
+						vect_res_2[i] = Vertical;
+					}
+					else if(tan <(float)(-20))
+					{
+						ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y+i].angle = Diagonal_lr;
+						vect_res_2[i] = Diagonal_lr;
+					}
+					else
+					{
+						vect_res_2[i] = Horizontal;
+					}
+				}
+				else if(tan <(float)(67))
+				{
+					ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y+i].angle = Diagonal_rl;
+					vect_res_2[i] = Diagonal_rl;
+				}
+				else
+				{
+					vect_res_2[i] = Vertical;
+				}*/
+			}
+			float16x8x2_t vect_res;
+			vect_res.val[0] = vect_res_1;
+			vect_res.val[1] = vect_res_2;
+			vst2q_f16((float16_t*)&ImageOut->pSobelPixel[indice-ImageIn->numCols], vect_res);
+		}
+		//Tail vpred need to be clean
+		if(numtail>0)
+		{
+			for(int j = 0; j<numtail+1; j++)
+			{
+				int y = (((ImageIn->numCols-2)>>3)<<3) + j;
+
+				Img_tmp->pData[xm*Img_tmp->numCols +y].y = (ImageIn->pData[(x-1)*ImageIn->numCols+y] + (ImageIn->pData[x*ImageIn->numCols+y]<<1) + ImageIn->pData[(x+1)*ImageIn->numCols+y]);
+				Img_tmp->pData[xm*Img_tmp->numCols +y].x = (ImageIn->pData[x*ImageIn->numCols+(y-1)] + (ImageIn->pData[x*ImageIn->numCols+(y)]<<1) + ImageIn->pData[x*ImageIn->numCols+(y+1)]);
+				if(x==1)
+				{
+					continue;
+				}
+				int indice = (x-1)*ImageIn->numCols + y;
+				int32_t gradx = Img_tmp->pData[((x-2)%3)*Img_tmp->numCols +y].x - Img_tmp->pData[(xm)*Img_tmp->numCols +y].x;
+				int32_t grady = Img_tmp->pData[((x-1)%3)*Img_tmp->numCols +(y-1)].y - Img_tmp->pData[((x-1)%3)*Img_tmp->numCols +(y+1)].y;
+				if(gradx==0&&grady==0)
+				{
+					ImageOut->pSobelPixel[indice].angle = Horizontal;
+					ImageOut->pSobelPixel[indice].mag = 0;
+					continue;
+				}
+				ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].mag = sqrtf((gradx)*(gradx)+ (grady)*(grady));
+				/*float tan*/ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = atan_simplify(/*gradx/abs(grady))*(180/PI_F64)*/gradx, grady);
+
+				/*if(tan < (float)(22))
+				{
+					if(tan < (float)(-68))
+					{
+						ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Vertical;
+					}
+					else if(tan <(float)(-20))
+					{
+						ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_lr;
+					}
+					else
+					{
+						ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Horizontal;
+					}
+				}
+				else if(tan <(float)(67))
+				{
+					ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_rl;
+				}
+				else
+				{
+					ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Vertical;
+				}*/
+			}
+		}
+		y = size_y-1;
+		Img_tmp->pData[xm*Img_tmp->numCols +y].y = ImageIn->pData[(x-1)*ImageIn->numCols+y] + (ImageIn->pData[x*ImageIn->numCols+y]<<1) + ImageIn->pData[(x+1)*ImageIn->numCols+y];
+	}
+	int y;
+	x=0;
+	for( int y =0; y < size_y; y++)
+	{
+		ImageOut->pSobelPixel[x*ImageIn->numCols+y].mag = 0;
+	}
+	x = size_x-1;
+	for( int y =0; y < size_y; y++)
+	{
+		ImageOut->pSobelPixel[x*ImageIn->numCols+y].mag = 0;
+	}
+	y = size_y-1;
+	for( int x =1; x < size_x; x++)
+	{
+		ImageOut->pSobelPixel[x*ImageIn->numCols+y].mag = 0;
+	}
+	y=0;
+	for( int x =1; x < size_x; x++)
+	{
+		ImageOut->pSobelPixel[x*ImageIn->numCols+y].mag = 0;
+	}
+}
+#else
+void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, arm_image_sobel_f16_t* ImageOut, arm_buffer_2_u16_t* Img_tmp)
+{
+	int c = 0;
+	int size_x = 240;
+	int size_y = 320;
+	int16_t gradx;
+	//int16_t grady;
+	ImageOut->numRows = ImageIn->numRows;
+	int numtail = (ImageIn->numCols-1)%8;
+	int x = 0;
+	for(int y =1; y<((ImageIn->numCols)>>3); y++)
+	{
+		int indice = ((y-1)<<3)+1;
+		uint16x8_t vect11 = vldrbq_u16(&ImageIn->pData[indice-1]);
+		uint16x8_t vect2 = vldrbq_u16(&ImageIn->pData[indice]);
+		vect2 = vshlq_n_u16(vect2, 1);
+		uint16x8_t vect31 = vldrbq_u16(&ImageIn->pData[indice+1]);
+		vect11 = vaddq_u16(vect11, vect2);
+		vect11 = vaddq_u16(vect11, vect31);
+		q15x8_t vect_void = vdupq_n_s16(0);
+		uint16x8x2_t vect_buff_di1;
+		vect_buff_di1.val[0] = vect11;
+		vect_buff_di1.val[1] = vect_void;
+		vst2q_u16(&Img_tmp->pData[indice].x, vect_buff_di1);
+	}
+	if(numtail>0)
+	{
+		int indice = (((ImageIn -> numCols-2)>>3) <<3);
+		mve_pred16_t vtail = vctp16q(numtail);
+		uint16x8_t vect1 = vldrbq_z_u16(&ImageIn->pData[indice-1], vtail);
+		uint16x8_t vect2 =vldrbq_z_u16(&ImageIn->pData[indice], vtail);
+		vect2 = vshlq_m_n_u16(vect2,vect2, 1, vtail);
+		uint16x8_t vect3 =vldrbq_z_u16(&ImageIn->pData[indice+1], vtail);
+		vect1 = vaddq_u16(vect1, vect2);//vtail or not?
+		vect1 = vaddq_u16(vect1, vect3);//idem
+		for(int j=0; j<numtail+1; j++)
+		{
+			Img_tmp->pData[indice + j].x = vect1[j];
+			Img_tmp->pData[indice + j].y = 0;
+		}
+	}
+	x = 1;
+	Img_tmp->pData[x*Img_tmp->numCols].y = ImageIn->pData[(x-1)*ImageIn->numCols] + (ImageIn->pData[x*ImageIn->numCols]<<1) + ImageIn->pData[(x+1)*ImageIn->numCols];
+	for(int y =1; y<((ImageIn->numCols)>>3); y++)
+	{
+		int indice = ImageIn->numCols +((y-1)<<3)+1;
+		uint16x8_t vect11 = vldrbq_u16(&ImageIn->pData[indice-1]);
+		uint16x8_t vect2 = vldrbq_u16(&ImageIn->pData[indice]);
+		vect2 = vshlq_n_u16(vect2, 1);
+		uint16x8_t vect31 = vldrbq_u16(&ImageIn->pData[indice+1]);
+		vect11 = vaddq_u16(vect11, vect2);
+		vect11 = vaddq_u16(vect11, vect31);
+		uint16x8_t vecth1 = vldrbq_u16(&ImageIn->pData[indice-ImageIn->numCols]);
+		uint16x8_t vectb1 = vldrbq_u16(&ImageIn->pData[indice+ImageIn->numCols]);
+		vectb1 = vaddq_s16(vectb1, vect2);
+		vectb1 = vaddq_s16(vectb1, vecth1);
+		uint16x8x2_t vect_buff_di1;
+		vect_buff_di1.val[0] = vect11;
+		vect_buff_di1.val[1] = vectb1;
+		vst2q_u16(&Img_tmp->pData[indice].x, vect_buff_di1);
+	}
+	if(numtail>0)
+	{
+		int indice = ImageIn->numCols + (((ImageIn -> numCols-2)>>3) <<3);
+		mve_pred16_t vtail = vctp16q(numtail);
+		uint16x8_t vect1 = vldrbq_z_u16(&ImageIn->pData[indice-1], vtail);
+		uint16x8_t vect2 =vldrbq_z_u16(&ImageIn->pData[indice], vtail);
+		vect2 = vshlq_m_n_u16(vect2,vect2, 1, vtail);
+		uint16x8_t vect3 =vldrbq_z_u16(&ImageIn->pData[indice+1], vtail);
+		vect1 = vaddq_u16(vect1, vect2);//vtail or not?
+		vect1 = vaddq_u16(vect1, vect3);//idem
+		uint16x8_t vecth = vldrbq_u16(&ImageIn->pData[indice-ImageIn->numCols]);
+		uint16x8_t vectb = vldrbq_u16(&ImageIn->pData[indice+ImageIn->numCols]);
+		vectb = vaddq_u16(vectb, vect2);
+		vectb = vaddq_u16(vectb, vecth);
+		for(int j=0; j<numtail+2; j++)
+		{
+			Img_tmp->pData[indice + j].x = vect1[j];
+			Img_tmp->pData[indice + j].y = vectb[j];
+		}
+	}
+	Img_tmp->pData[x*Img_tmp->numCols+size_y-1].y = ImageIn->pData[(x-1)*ImageIn->numCols+size_y-1] + (ImageIn->pData[x*ImageIn->numCols+size_y-1]<<1) + ImageIn->pData[(x+1)*ImageIn->numCols+size_y-1];
+	for( int x =2; x<size_x; x++)
+	{
+		int xm = x%3;
+		int y = 0;
+		Img_tmp->pData[xm*Img_tmp->numCols +y].y = ImageIn->pData[(x-1)*ImageIn->numCols+y] + (ImageIn->pData[x*ImageIn->numCols+y]<<1) + ImageIn->pData[(x+1)*ImageIn->numCols+y];
+		for( int y =1; y < size_y-numtail-1; y+=8)
+		{
+			/*
+			if(gradx==0&&grady==0)
+			{
+				ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Horizontal;
+				ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].mag = 0;
+				continue;
+			}*/
+			int indice = x*ImageIn->numCols + y;
+			int indicem = xm*ImageIn->numCols + y;
+			uint16x8_t vect11 = vldrbq_u16(&ImageIn->pData[indice-1]);
+			uint16x8_t vect2 = vldrbq_u16(&ImageIn->pData[indice]);
+			vect2 = vshlq_n_u16(vect2, 1);
+			uint16x8_t vect31 = vldrbq_u16(&ImageIn->pData[indice+1]);
+			vect11 = vaddq_u16(vect11, vect2);
+			vect11 = vaddq_u16(vect11, vect31);
+			uint16x8_t vecth1 = vldrbq_u16(&ImageIn->pData[indice-ImageIn->numCols]);
+			uint16x8_t vectb1 = vldrbq_u16(&ImageIn->pData[indice+ImageIn->numCols]);
+			vectb1 = vaddq_s16(vectb1, vect2);
+			vectb1 = vaddq_s16(vectb1, vecth1);
+			uint16x8x2_t vect_buff_di1;
+			vect_buff_di1.val[0] = vect11;
+			vect_buff_di1.val[1] = vectb1;
+			vst2q_u16(&Img_tmp->pData[indicem].x, vect_buff_di1);
+			
+			uint16x8x2_t vec_x_y_1 = vld2q_u16(&Img_tmp->pData[((x-2)%3)*ImageIn->numCols + y].x);
+			uint16x8x2_t vec_x_2 = vld2q_u16(&Img_tmp->pData[indicem].x);
+			uint16x8x2_t vec_y_1 = vld2q_u16(&Img_tmp->pData[((x-1)%3)*ImageIn->numCols + y-1].x);
+			uint16x8x2_t vec_y_2 = vld2q_u16(&Img_tmp->pData[((x-1)%3)*ImageIn->numCols + y+1].x);
+			int16x8_t vectgradx = vsubq_s16(vec_x_y_1.val[0], vec_x_2.val[0]);
+			int16x8_t vectgrady = vsubq_s16(vec_y_1.val[1], vec_y_2.val[1]);
+			//int numVect = 8;
+
+			
+
+			//float16x8_t vect_res_1;
+			float16x8_t vect_res_2;
+			uint16x8_t vect_gradx_1 = vqdmulhq(vectgradx, vectgradx);
+			uint16x8_t vect_grady_1 = vqdmulhq(vectgrady, vectgrady);
+			//shift 1 right before add
+			vect_grady_1 = vrshrq( vect_grady_1 ,1);
+			vect_gradx_1 = vrshrq( vect_gradx_1 ,1);
+			vect_gradx_1 = vaddq_u16(vect_gradx_1, vect_grady_1);
+			
+			q15x8_t newtonStartVec = vdupq_n_s16(INVSQRT_MAGIC_F16) - vshrq( (q15x8_t)vect_gradx_1, 1);
+        	float16x8_t sumHalf = vcvtq(vrshrq(vect_gradx_1, 1));
+			float16x8_t invSqrt;
+        	/*
+        	 * compute 3 x iterations
+        	 *
+        	 * The more iterations, the more accuracy.
+        	 * If you need to trade a bit of accuracy for more performance,
+        	 * you can comment out the 3rd use of the macro.
+        	 */
+        	INVSQRT_NEWTON_MVE_F16(invSqrt, sumHalf, (float16x8_t) newtonStartVec);
+			for(int j = 0; j<8; j++)
+			{
+				if((float)invSqrt[j] < (float)0.0)
+				{
+					if(c ==0)
+					{
+						c++;
+						for(int i = 0; i<8; i++)
+						{
+							printf("%f ", (double)invSqrt[i]);
+						}
+						printf("\n");
+						for(int i = 0; i<8; i++)
+						{
+							printf("%f ", (double)newtonStartVec[i]);
+						}
+						printf("HUDGE ISSUE\n");
+					}
+					
+				}
+			}
+        	INVSQRT_NEWTON_MVE_F16(invSqrt, sumHalf, invSqrt);
+			for(int j = 0; j<8; j++)
+			{
+				if(c ==1)
+				{
+					for(int i = 0; i<8; i++)
+					{
+						printf("%f ", (double)invSqrt[i]);
+					}
+					printf("\n");
+					for(int i = 0; i<8; i++)
+					{
+						printf("%f ", (double)newtonStartVec[i]);
+					}
+					printf("HUDGE ISSUE\n");
+				}
+			}
+        	INVSQRT_NEWTON_MVE_F16(invSqrt, sumHalf, invSqrt);
+        	for(int j = 0; j<8; j++)
+			{
+				if(c ==1)
+				{
+					c++;
+					for(int i = 0; i<8; i++)
+					{
+						printf("%f ", (double)invSqrt[i]);
+					}
+					printf("\n");
+					for(int i = 0; i<8; i++)
+					{
+						printf("%f ", (double)newtonStartVec[i]);
+					}
+					printf("HUDGE ISSUE\n");
+				}
+			}
+			/*
+        	 * set negative values to 0
+        	 */
+        	//invSqrt = vdupq_m(invSqrt, (float16_t)0.0f, vcmpltq(invSqrt, (float16_t)0.0f));
+        	/*
+        	 * sqrt(x) = x * invSqrt(x)
+        	 */
+        	float16x8x2_t vect_res;
+			vect_res.val[0] = vmulq(vcvtq(vect_gradx_1), invSqrt);
+			//shift two left after square
+			for(int i = 0; i< 8; i++)
+			{
+				//vect for grad
+				gradx = vectgradx[i];
+				//magnitude
+				
+				//VERY IMPORTANT PIECE OF CODE
+				//allow you to avoid the case 0 0 in the tan causing huge perf loses
+				/*if(vectgradx[i]==0&&vectgrady[i]==0)
+				{
+					vect_res_2[i] = Horizontal;
+					vect_res_1[i] = 0;
+					continue;
+				}*/
+
 				float tan = atan(vectgradx[i]/abs(vectgrady[i]))*(180/PI_F64);
 				if(tan < (float)(22))
 				{
@@ -1092,18 +1307,8 @@ void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, a
 					}
 					else if(tan <(float)(-20))
 					{
-						if(gradx<0)
-						{
-							vect_res_2[i] = Diagonal_rl;
-						}
-						else
-						{
-							vect_res_2[i] = Diagonal_lr;
-						}
-						#ifdef BUGMVALLOW
 						ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y+i].angle = Diagonal_lr;
 						vect_res_2[i] = Diagonal_lr;
-						#endif
 					}
 					else
 					{
@@ -1112,28 +1317,18 @@ void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, a
 				}
 				else if(tan <(float)(67))
 				{
-					if(gradx<0)
-					{
-						vect_res_2[i] = Diagonal_lr;
-					}
-					else
-					{
-						vect_res_2[i] = Diagonal_rl;
-					}
-					#ifdef BUGMVALLOW
 					ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y+i].angle = Diagonal_rl;
 					vect_res_2[i] = Diagonal_rl;
-					#endif
 				}
 				else
 				{
 					vect_res_2[i] = Vertical;
 				}
 			}
-			float16x8x2_t vect_res;
-			vect_res.val[0] = vect_res_1;
+			/*float16x8x2_t vect_res;
+			vect_res.val[0] = vect_res_1;*/
 			vect_res.val[1] = vect_res_2;
-			vst2q_f16((float16_t*)&ImageOut->pSobelPixel[indice-ImageIn->numCols], vect_res);
+			vst2q_f16(&ImageOut->pSobelPixel[indice-ImageIn->numCols].mag, vect_res);
 		}
 		//Tail vpred need to be clean
 		if(numtail>0)
@@ -1167,17 +1362,7 @@ void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, a
 					}
 					else if(tan <(float)(-20))
 					{
-						if(gradx<0)
-						{
-							ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_rl;
-						}
-						else
-						{
-							ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_lr;
-						}
-						#ifdef BUGMVALLOW
 						ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_lr;
-						#endif
 					}
 					else
 					{
@@ -1186,17 +1371,7 @@ void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, a
 				}
 				else if(tan <(float)(67))
 				{
-					if(gradx<0)
-					{
-						ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_lr;
-					}
-					else
-					{
-						ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_rl;
-					}
-					#ifdef BUGMVALLOW
 					ImageOut->pSobelPixel[(x-1)*ImageIn->numCols+y].angle = Diagonal_rl;
-					#endif
 				}
 				else
 				{
@@ -1229,5 +1404,6 @@ void arm_sobel_in_u8_out_f16_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, a
 		ImageOut->pSobelPixel[x*ImageIn->numCols+y].mag = 0;
 	}
 }
-
 #endif
+#endif
+

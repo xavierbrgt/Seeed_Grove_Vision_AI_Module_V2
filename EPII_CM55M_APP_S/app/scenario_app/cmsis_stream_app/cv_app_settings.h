@@ -1,7 +1,6 @@
 #ifndef CV_APP_SETTINGS_H_
 #define CV_APP_SETTINGS_H_
 
-//#define ORIGINAL_APP
 #include "python_config.h"
 #include "spi_protocol.h"
 #include "memory_manage.h"
