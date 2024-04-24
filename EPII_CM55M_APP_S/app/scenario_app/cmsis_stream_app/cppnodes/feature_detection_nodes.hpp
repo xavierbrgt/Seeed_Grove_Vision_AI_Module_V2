@@ -90,3 +90,85 @@ protected:
     arm_buffer_2_q15_t img_tmp_grad2;
     arm_image_gray_q15_t img_tmp;
 };
+
+template<typename IN, int inputSize,
+         typename OUT,int outputSize>
+class MVCannyEdge;
+
+template<int inputSize,int outputSize>
+class MVCannyEdge<int8_t,inputSize,
+                int8_t,outputSize>: 
+      public GenericNode<int8_t,inputSize,
+                         int8_t,outputSize>
+{
+public:
+    /* MVCannyEdge needs the input and output FIFOs */
+    MVCannyEdge(FIFOBase<int8_t> &src,
+                FIFOBase<int8_t> &dst,
+                int w,int h):
+    GenericNode<int8_t,inputSize,int8_t,outputSize>(src,dst),
+    mW(w),mH(h){
+            
+            gm = (gvec_t*) mm_reserve_align(w*sizeof(gvec_t),0x20);
+            buffer = (int*)mm_reserve_align(2*w*sizeof(int),0x20);
+
+           
+    };
+
+    ~MVCannyEdge()
+    {
+
+    }
+
+    /* In asynchronous mode, node execution will be 
+       skipped in case of underflow on the input 
+       or overflow in the output.
+    */
+    int prepareForRunning() final
+    {
+        if (this->willOverflow() ||
+            this->willUnderflow())
+        {
+           return(CG_SKIP_EXECUTION_ID_CODE); // Skip execution
+        }
+
+        return(0);
+    };
+    
+    /* 
+       Node processing
+       1 is added to the input
+    */
+    int run() final{
+        int8_t *i=this->getReadBuffer();
+        int8_t *o=this->getWriteBuffer();
+
+        arm_matrix_instance_q15 io;
+
+        io.numRows=mH;
+        io.numCols=mW;
+        io.pData = (q15_t*)o;
+
+        rectangle_t roi={0,0,(int16_t)mW,(int16_t)mH};
+
+      
+        memcpy(o,i,sizeof(q15_t)*mW*mH);
+
+        int low_thresh = (int)(0.3*255);
+        int high_thresh = (int)(0.7*255);
+
+       
+        imlib_edge_canny(&io,&roi, 
+                             low_thresh, 
+                             high_thresh, 
+                             gm, 
+                             buffer);
+       
+        
+        return(0);
+    };
+protected:
+    int mW,mH;
+    gvec_t *gm;
+    int *buffer;
+};

@@ -1,12 +1,24 @@
 #ifndef _CANNY_EDGE_H_
 #define _CANNY_EDGE_H_
 #include "arm_math.h"
+#include "dsp/matrix_functions.h"
+
 #include "arm_type_cvl.h"
+
+#include "MV.h"
 
 #ifdef   __cplusplus
 extern "C"
 {
 #endif
+
+extern void imlib_edge_canny(arm_matrix_instance_q15* src, 
+                             rectangle_t *roi, 
+                             int low_thresh, 
+                             int high_thresh, 
+                             gvec_t *gm, 
+                             int* buffer);
+
 
 /**
  * @brief        Thining operation in q15 on a sobel image outputing a classification of the pixels for output

@@ -153,7 +153,7 @@ FIFO buffers
 #define FIFOSIZE0 115200
 #define FIFOSIZE1 76800
 #define FIFOSIZE2 153600
-#define FIFOSIZE3 76800
+#define FIFOSIZE3 153600
 #define FIFOSIZE4 230400
 #define FIFOSIZE5 76900
 #define FIFOSIZE6 1
@@ -176,7 +176,7 @@ int init_buffer_cv_scheduler(stream_env_t *env,
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
     }
-    buffers.buf1 = (uint8_t *)CG_MALLOC(76900 * sizeof(uint8_t));
+    buffers.buf1 = (uint8_t *)CG_MALLOC(153600 * sizeof(uint8_t));
     if (buffers.buf1==NULL)
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
@@ -220,12 +220,12 @@ FIFO<uint32_t,FIFOSIZE6,1,0> *fifo6;
 
 typedef struct {
     SendResult<int8_t,76900,uint32_t,1> *Serial;
-    CannyEdge<int8_t,153600,int8_t,76800> *canny;
+    MVCannyEdge<int8_t,153600,int8_t,153600> *canny;
     GaussianFilter<int8_t,76800,int8_t,153600> *gaussian;
     JPEGEncoder<int8_t,230400,uint32_t,1,int8_t,76900> *jpeg;
     Camera<int8_t,115200> *ov5647;
     YUVToGray8<int8_t,115200,int8_t,76800> *to_gray8;
-    Gray8ToRGB<int8_t,76800,int8_t,230400> *to_rgb;
+    Gray16ToRGB<int8_t,153600,int8_t,230400> *to_rgb;
 } nodes_t;
 
 CG_BEFORE_BUFFER
@@ -284,7 +284,7 @@ init_cb_state();
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
     }
-    nodes.canny = new CannyEdge<int8_t,153600,int8_t,76800>(*(fifos.fifo2),*(fifos.fifo3),320,240);
+    nodes.canny = new MVCannyEdge<int8_t,153600,int8_t,153600>(*(fifos.fifo2),*(fifos.fifo3),320,240);
     if (nodes.canny==NULL)
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
@@ -309,7 +309,7 @@ init_cb_state();
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);
     }
-    nodes.to_rgb = new Gray8ToRGB<int8_t,76800,int8_t,230400>(*(fifos.fifo3),*(fifos.fifo4),320,240);
+    nodes.to_rgb = new Gray16ToRGB<int8_t,153600,int8_t,230400>(*(fifos.fifo3),*(fifos.fifo4),320,240);
     if (nodes.to_rgb==NULL)
     {
         return(CG_MEMORY_ALLOCATION_FAILURE);

@@ -28,7 +28,7 @@ Serial [label=<
 canny [label=<
 <TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">canny<BR/>(CannyEdge)</FONT></TD>
+    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">canny<BR/>(MVCannyEdge)</FONT></TD>
   </TR>
 </TABLE>>];
 
@@ -72,7 +72,7 @@ to_gray8 [label=<
 to_rgb [label=<
 <TABLE color="black" bgcolor="none" BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
   <TR>
-    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">to_rgb<BR/>(Gray8ToRGB)</FONT></TD>
+    <TD ALIGN="CENTER" PORT="i"><FONT COLOR="black" POINT-SIZE="14.0">to_rgb<BR/>(Gray16ToRGB)</FONT></TD>
   </TR>
 </TABLE>>];
 
@@ -96,10 +96,10 @@ gaussian:i -> canny:i [style="solid",color="black",fontsize="12.0",fontcolor="bl
 ,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >153600</FONT>
 </TD></TR></TABLE>>]
 
-canny:i -> to_rgb:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<GRAY8_320_240>
-,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >76800</FONT>
+canny:i -> to_rgb:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<GRAY16_320_240>
+,headlabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >153600</FONT>
 </TD></TR></TABLE>>
-,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >76800</FONT>
+,taillabel=<<TABLE BORDER="0" CELLPADDING="4"><TR><TD><FONT COLOR="blue" POINT-SIZE="12.0" >153600</FONT>
 </TD></TR></TABLE>>]
 
 to_rgb:i -> jpeg:i [style="solid",color="black",fontsize="12.0",fontcolor="black",label=<RGB_320_240>

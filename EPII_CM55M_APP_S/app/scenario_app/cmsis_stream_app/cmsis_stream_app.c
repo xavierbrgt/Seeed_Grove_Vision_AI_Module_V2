@@ -689,12 +689,7 @@ int app_main(void) {
 
 	//Face Detection Face mesh
 	xprintf("Face Detection Face mesh\n");
-	stream_env.systick_1 = 0;
-	stream_env.systick_2 = 0;
-	stream_env.loop_cnt_1 = 0;
-	stream_env.loop_cnt_2 = 0;
-	stream_env.capture_image_tick = 0;
-	stream_env.algo_tick = 0;
+	
 	cmsis_stream_init(&stream_env,true, true, FACE_DECTECT_FLASH_ADDR, FACE_MESH_FLASH_ADDR, IRIS_LANDMARKS_FLASH_ADDR);
 	app_start_state(APP_STATE_ALLON_FD_FM);
 	
