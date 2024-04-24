@@ -6,7 +6,7 @@ from .node_types import *
 
 class TF12(GenericNode):
     def __init__(self,name,addr,i,o1,o2):
-        GenericSink.__init__(self,name)
+        GenericSink.__init__(self,name,identified=False)
 
         self.addInput("i",CType(SINT8),i)
         self.addOutput("o1",CType(SINT8),o1)
@@ -28,7 +28,7 @@ class TF12(GenericNode):
 
 class TF11(GenericNode):
     def __init__(self,name,addr,i,o):
-        GenericSink.__init__(self,name)
+        GenericSink.__init__(self,name,identified=False)
 
         self.addInput("i",CType(SINT8),i)
         self.addOutput("o",CType(SINT8),o)

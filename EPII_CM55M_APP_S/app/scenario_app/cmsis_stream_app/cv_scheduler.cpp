@@ -105,18 +105,42 @@ static uint8_t schedule[7]=
 4,5,2,1,6,3,0,
 };
 
-#define PAUSED_SCHEDULER 1 
-#define SCHEDULER_NOT_STARTED 2 
+/*
 
+Internal ID identification for the nodes
 
-void init_cb_state_cv_scheduler(cv_scheduler_cb_t* state)
+*/
+#define SENDRESULT_INTERNAL_ID 0
+#define CANNYEDGE_INTERNAL_ID 1
+#define GAUSSIANFILTER_INTERNAL_ID 2
+#define JPEGENCODER_INTERNAL_ID 3
+#define CAMERA_INTERNAL_ID 4
+#define YUVTOGRAY8_INTERNAL_ID 5
+#define GRAY8TORGB_INTERNAL_ID 6
+
+/* For callback management */
+
+#define CG_PAUSED_SCHEDULER_ID 1
+#define CG_SCHEDULER_NOT_STARTED_ID 2
+#define CG_SCHEDULER_RUNNING_ID 3
+
+struct cb_state_t
 {
-    if (state)
-    {
-      state->status = SCHEDULER_NOT_STARTED;
-      state->nbSched = 0;
-      state->scheduleStateID = 0;
-    }
+    unsigned long scheduleStateID;
+    unsigned long nbSched;
+    int status;
+    kCBStatus running;
+};
+
+static cb_state_t cb_state;
+
+
+static void init_cb_state()
+{
+    cb_state.status = CG_SCHEDULER_NOT_STARTED_ID;
+    cb_state.nbSched = 0;
+    cb_state.scheduleStateID = 0;
+    cb_state.running = kNewExecution;
 }
 
 
@@ -215,6 +239,8 @@ int init_cv_scheduler(stream_env_t *env,
                               struct_algoResult *alg_result,
                               struct_fm_algoResult_with_fps *alg_fm_result)
 {
+init_cb_state();
+
     CG_BEFORE_FIFO_INIT;
     fifos.fifo0 = new FIFO<int8_t,FIFOSIZE0,1,0>((void*)app_get_raw_addr());
     if (fifos.fifo0==NULL)
@@ -358,16 +384,16 @@ void free_cv_scheduler(stream_env_t *env,
 
 
 CG_BEFORE_SCHEDULER_FUNCTION
-uint32_t cv_scheduler(int *error,cv_scheduler_cb_t *scheduleState,stream_env_t *env,
+uint32_t cv_scheduler(int *error,stream_env_t *env,
                               struct_algoResult *alg_result,
                               struct_fm_algoResult_with_fps *alg_fm_result)
 {
     int cgStaticError=0;
     uint32_t nbSchedule=0;
 
-if (scheduleState->status==PAUSED_SCHEDULER)
+if (cb_state.status==CG_PAUSED_SCHEDULER_ID)
    {
-      nbSchedule = scheduleState->nbSched;
+      nbSchedule = cb_state.nbSched;
 
    }
 
@@ -380,54 +406,61 @@ CG_RESTORE_STATE_MACHINE_STATE;
         /* Run a schedule iteration */
         CG_BEFORE_ITERATION;
         unsigned long id=0;
-        if (scheduleState->status==PAUSED_SCHEDULER)
+        if (cb_state.status==CG_PAUSED_SCHEDULER_ID)
         {
-            id = scheduleState->scheduleStateID;
+            id = cb_state.scheduleStateID;
+            cb_state.status = CG_SCHEDULER_RUNNING_ID;
         }
         for(; id < 7; id++)
         {
             CG_BEFORE_NODE_EXECUTION(schedule[id]);
-
             switch(schedule[id])
             {
                 case 0:
                 {
+                    nodes.Serial->setExecutionStatus(cb_state.running);
                    cgStaticError = nodes.Serial->run();
                 }
                 break;
 
                 case 1:
                 {
+                    nodes.canny->setExecutionStatus(cb_state.running);
                    cgStaticError = nodes.canny->run();
                 }
                 break;
 
                 case 2:
                 {
+                    nodes.gaussian->setExecutionStatus(cb_state.running);
                    cgStaticError = nodes.gaussian->run();
                 }
                 break;
 
                 case 3:
                 {
+                    nodes.jpeg->setExecutionStatus(cb_state.running);
                    cgStaticError = nodes.jpeg->run();
                 }
                 break;
 
                 case 4:
                 {
+                    nodes.ov5647->setExecutionStatus(cb_state.running);
                    cgStaticError = nodes.ov5647->run();
                 }
                 break;
 
                 case 5:
                 {
+                    nodes.to_gray8->setExecutionStatus(cb_state.running);
                    cgStaticError = nodes.to_gray8->run();
                 }
                 break;
 
                 case 6:
                 {
+                    nodes.to_rgb->setExecutionStatus(cb_state.running);
                    cgStaticError = nodes.to_rgb->run();
                 }
                 break;
@@ -436,12 +469,14 @@ CG_RESTORE_STATE_MACHINE_STATE;
                 break;
             }
             CG_AFTER_NODE_EXECUTION(schedule[id]);
-            if (cgStaticError == CG_PAUSE_SCHEDULER)
+            cb_state.running = kNewExecution;
+            if (cgStaticError == CG_PAUSED_SCHEDULER)
             {
                 CG_SAVE_STATE_MACHINE_STATE;
-                scheduleState->status = PAUSED_SCHEDULER;
-                scheduleState->nbSched = nbSchedule;
-                scheduleState->scheduleStateID = id;
+                cb_state.status = CG_PAUSED_SCHEDULER_ID;
+                cb_state.nbSched = nbSchedule;
+                cb_state.scheduleStateID = id;
+                cb_state.running = kResumedExecution;
             }
             CHECKERROR;
         }

@@ -29,21 +29,15 @@ struct network;
 typedef struct _stream_env {
     uint32_t algo_tick;
     uint32_t capture_image_tick;
+    uint32_t function_tick;
     uint32_t systick_1;
     uint32_t systick_2;
     uint32_t loop_cnt_1;
     uint32_t loop_cnt_2;
-#if defined(USE_NPU)
-    TfLiteTensor *fd_input;
-    TfLiteTensor *fd_output;
-    TfLiteTensor *fd_output2;
-    TfLiteTensor *fm_input;
-    TfLiteTensor *fm_output;
-    TfLiteTensor *fm_output2;
-    TfLiteTensor *il_input;
-    TfLiteTensor *il_output;
-    struct network *fd_net;
-#endif
+    uint32_t func_systick_1;
+    uint32_t func_systick_2;
+    uint32_t func_loop_cnt_1;
+    uint32_t func_loop_cnt_2;
 } stream_env_t;
 
 #define CG_MALLOC(A) mm_reserve_align((A),0x20);
@@ -67,7 +61,20 @@ set_model_change_by_uart();                                                     
     sensordplib_retrigger_capture();                                                \
                                                                                     \
     SystemGetTick(&systick_2, &loop_cnt_2);                                         \
-    env->capture_image_tick = (loop_cnt_2-loop_cnt_1)*CPU_CLK+(systick_1-systick_2);\
+    env->capture_image_tick = (int32_t)(loop_cnt_2-loop_cnt_1)*CPU_CLK+((int32_t)systick_1-(int32_t)systick_2);\
 }
 
+#define CG_BEFORE_NODE_EXECUTION(ID)                          \
+if (ID == CANNYEDGE_INTERNAL_ID)                              \
+{                                                             \
+   SystemGetTick(&env->func_systick_1, &env->func_loop_cnt_1);\
+}
+
+#define CG_AFTER_NODE_EXECUTION(ID)                                                                                        \
+if (ID == CANNYEDGE_INTERNAL_ID)                                                                                           \
+{                                                                                                                          \
+    SystemGetTick(&env->func_systick_2, &env->func_loop_cnt_2);                                                            \
+    env->function_tick = (int32_t)(&env->func_loop_cnt_2-&env->func_loop_cnt_1)*CPU_CLK+((int32_t)&env->func_systick_1-(int32_t)&env->func_systick_2);\
+                                                                                                                           \
+}
 #endif

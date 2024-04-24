@@ -217,14 +217,14 @@ public:
 
 
         SystemGetTick(&m_env->systick_2, &m_env->loop_cnt_2);
-        uint32_t algo_tick = (m_env->loop_cnt_2-m_env->loop_cnt_1)*CPU_CLK+(m_env->systick_1-m_env->systick_2);              
+        uint32_t algo_tick = (int32_t)(m_env->loop_cnt_2-m_env->loop_cnt_1)*CPU_CLK+((int32_t)m_env->systick_1-(int32_t)m_env->systick_2);              
         algo_tick += m_env->capture_image_tick;   
 
     
         send_device_id();
         
         event_reply(concat_strings(", ", 
-            algo_tick_2_json_str(algo_tick), 
+            algo_tick_2_json_str(algo_tick,m_env->function_tick), 
             ", ", 
             img_2_json_str((std::size_t)l[0],(const unsigned char*)stream)));
         

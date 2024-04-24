@@ -177,7 +177,7 @@ std::string  box_results_2_json_str(std::forward_list<el_box_t>& results);
 std::string  fm_point_results_2_json_str(std::forward_list<el_fm_point_t>& results);
 std::string  keypoint_results_2_json_str(std::forward_list<el_keypoint_t>& results);
 std::string  img_res_2_json_str(const el_img_t* img);
-std::string  algo_tick_2_json_str(uint32_t algo_tick);
+std::string  algo_tick_2_json_str(uint32_t algo_tick,uint32_t func_tick);
 std::string  fd_fl_results_2_json_str(std::forward_list<el_fd_fl_t>& results);
 std::string  fd_fl_el_9t_results_2_json_str(std::forward_list<el_fd_fl_el_9pt_t>& results);
 std::string  fm_face_bbox_results_2_json_str(std::forward_list<el_box_t>& results);

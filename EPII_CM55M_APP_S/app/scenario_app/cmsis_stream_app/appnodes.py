@@ -6,7 +6,7 @@ from nodes import *
 
 class SendResult(GenericSink):
     def __init__(self,name,w,h):
-        GenericSink.__init__(self,name)
+        GenericSink.__init__(self,name,identified=False)
         self.addInput("jpeg",CType(SINT8),w*h+100)
         self.addInput("l",CType(UINT32),1)
 
@@ -29,7 +29,7 @@ class SendResult(GenericSink):
 
 class JPEGEncoder(GenericNode):
     def __init__(self,name,w,h):
-        GenericSink.__init__(self,name)
+        GenericSink.__init__(self,name,identified=False)
         src_t = CImageType(w,h,CImageType.RGB)
 
         self.addInput("i",src_t,src_t._nb_bytes)

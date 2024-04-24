@@ -794,7 +794,7 @@ void send_device_id() {
 
 }
 
-std::string  algo_tick_2_json_str(uint32_t algo_tick) {
+std::string  algo_tick_2_json_str(uint32_t algo_tick,uint32_t func_tick) {
     std::string ss;
     const char* delim = "";
 
@@ -803,6 +803,8 @@ std::string  algo_tick_2_json_str(uint32_t algo_tick) {
     ss += concat_strings(delim,
                             "[",
                             std::to_string(algo_tick),
+                            ",",
+                            std::to_string(func_tick),
                             "]");
     delim = ", ";
     ss += "]";

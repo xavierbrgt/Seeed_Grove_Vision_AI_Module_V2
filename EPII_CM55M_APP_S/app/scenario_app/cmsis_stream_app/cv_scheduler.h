@@ -15,15 +15,6 @@ extern "C"
 {
 #endif
 
-typedef struct cv_scheduler_cb
-{
-    unsigned long scheduleStateID;
-    unsigned long nbSched;
-    int status;
-} cv_scheduler_cb_t;
-
-extern void init_cb_state_cv_scheduler(cv_scheduler_cb_t*);
-
 
 
 extern int init_buffer_cv_scheduler(stream_env_t *env,
@@ -40,7 +31,7 @@ extern void free_cv_scheduler(stream_env_t *env,
                               struct_algoResult *alg_result,
                               struct_fm_algoResult_with_fps *alg_fm_result);
 
-extern uint32_t cv_scheduler(int *error,cv_scheduler_cb_t *scheduleState,stream_env_t *env,
+extern uint32_t cv_scheduler(int *error,stream_env_t *env,
                               struct_algoResult *alg_result,
                               struct_fm_algoResult_with_fps *alg_fm_result);
 

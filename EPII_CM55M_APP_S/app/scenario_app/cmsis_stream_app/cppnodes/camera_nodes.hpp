@@ -27,7 +27,7 @@ public:
     int run() final{
         if (!g_frame_ready)
         {
-            return(CG_PAUSE_SCHEDULER);
+            return(CG_PAUSED_SCHEDULER);
         }
         g_frame_ready=0;
 
@@ -100,7 +100,7 @@ public:
     int run() final{
         if (!g_frame_ready)
         {
-            return(CG_PAUSE_SCHEDULER);
+            return(CG_PAUSED_SCHEDULER);
         }
         g_frame_ready=0;
         

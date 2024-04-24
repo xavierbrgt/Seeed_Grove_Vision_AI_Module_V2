@@ -105,7 +105,7 @@ class CameraCommon(GenericSource):
            return "APP_DP_RES_YUV640x480_INP_SUBSAMPLE_4X"
 
     def __init__(self,name,mode=APP_DP_RES_YUV640x480_INP_SUBSAMPLE_2X):
-        GenericSource.__init__(self,name)
+        GenericSource.__init__(self,name,identified=False)
         self._mode = mode
         
 

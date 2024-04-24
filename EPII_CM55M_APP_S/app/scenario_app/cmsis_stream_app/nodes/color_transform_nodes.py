@@ -6,7 +6,7 @@ from .node_types import *
 
 class YUVToRGB(GenericNode):
     def __init__(self,name,w,h):
-        GenericSink.__init__(self,name)
+        GenericSink.__init__(self,name,identified=False)
         src_t = CImageType(w,h,CImageType.YUV)
         dst_t = CImageType(w,h,CImageType.RGB)
 
@@ -22,7 +22,7 @@ class YUVToRGB(GenericNode):
 
 class YUVToGray16(GenericNode):
     def __init__(self,name,w,h):
-        GenericSink.__init__(self,name)
+        GenericSink.__init__(self,name,identified=False)
         src_t = CImageType(w,h,CImageType.YUV)
         dst_t = CImageType(w,h,CImageType.GRAY16)
 
@@ -38,7 +38,7 @@ class YUVToGray16(GenericNode):
 
 class YUVToGray8(GenericNode):
     def __init__(self,name,w,h):
-        GenericSink.__init__(self,name)
+        GenericSink.__init__(self,name,identified=False)
         src_t = CImageType(w,h,CImageType.YUV)
         dst_t = CImageType(w,h,CImageType.GRAY8)
 
@@ -55,7 +55,7 @@ class YUVToGray8(GenericNode):
 
 class Gray16ToRGB(GenericNode):
     def __init__(self,name,w,h):
-        GenericSink.__init__(self,name)
+        GenericSink.__init__(self,name,identified=False)
         src_t = CImageType(w,h,CImageType.GRAY16)
         dst_t = CImageType(w,h,CImageType.RGB)
 
@@ -71,7 +71,7 @@ class Gray16ToRGB(GenericNode):
 
 class Gray8ToRGB(GenericNode):
     def __init__(self,name,w,h):
-        GenericSink.__init__(self,name)
+        GenericSink.__init__(self,name,identified=False)
         src_t = CImageType(w,h,CImageType.GRAY8)
         dst_t = CImageType(w,h,CImageType.RGB)
 

@@ -36,6 +36,7 @@ conf.schedName="cv_scheduler"
 conf.bufferAllocation = True
 conf.memoryOptimization = True 
 conf.horizontal = True 
+#conf.nodeIdentification=True
 
 # Compute a static scheduling of the graph 
 # The size of FIFO is also computed
