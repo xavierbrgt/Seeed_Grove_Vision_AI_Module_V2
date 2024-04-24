@@ -31,13 +31,9 @@ typedef struct _stream_env {
     uint32_t capture_image_tick;
     uint32_t function_tick;
     uint32_t systick_1;
-    uint32_t systick_2;
     uint32_t loop_cnt_1;
-    uint32_t loop_cnt_2;
     uint32_t func_systick_1;
-    uint32_t func_systick_2;
     uint32_t func_loop_cnt_1;
-    uint32_t func_loop_cnt_2;
 } stream_env_t;
 
 #define CG_MALLOC(A) mm_reserve_align((A),0x20);
@@ -45,12 +41,17 @@ typedef struct _stream_env {
 
 #define CG_FREE(A) 
 
-#define CPU_CLK (0xfffffful+1)
+#define CPU_CLK 0xfffffful+1
 
 
 
-#define CG_BEFORE_ITERATION \
-SystemGetTick(&env->systick_1, &env->loop_cnt_1);
+#define CG_BEFORE_ITERATION               \
+{                                         \
+   uint32_t systick_1,loop_cnt_1;         \
+   SystemGetTick(&systick_1, &loop_cnt_1);\
+   env->systick_1 = systick_1;            \
+   env->loop_cnt_1 = loop_cnt_1;          \
+}
 
 #define CG_AFTER_ITERATION                                                          \
 set_model_change_by_uart();                                                         \
@@ -61,20 +62,26 @@ set_model_change_by_uart();                                                     
     sensordplib_retrigger_capture();                                                \
                                                                                     \
     SystemGetTick(&systick_2, &loop_cnt_2);                                         \
-    env->capture_image_tick = (int32_t)(loop_cnt_2-loop_cnt_1)*CPU_CLK+((int32_t)systick_1-(int32_t)systick_2);\
+    env->capture_image_tick = (loop_cnt_2-loop_cnt_1)*CPU_CLK+(systick_1-systick_2);\
 }
 
-#define CG_BEFORE_NODE_EXECUTION(ID)                          \
-if (ID == CANNYEDGE_INTERNAL_ID)                              \
-{                                                             \
-   SystemGetTick(&env->func_systick_1, &env->func_loop_cnt_1);\
+#define ALGO_TO_BENCHMARK CANNY_INTERNAL_ID
+//#define ALGO_TO_BENCHMARK JPEG_INTERNAL_ID
+
+#define CG_BEFORE_NODE_EXECUTION(ID)      \
+if ((ID) == ALGO_TO_BENCHMARK)            \
+{                                         \
+   uint32_t systick_1,loop_cnt_1;         \
+   SystemGetTick(&systick_1, &loop_cnt_1);\
+   env->func_systick_1 = systick_1;       \
+   env->func_loop_cnt_1 = loop_cnt_1;     \
 }
 
-#define CG_AFTER_NODE_EXECUTION(ID)                                                                                        \
-if (ID == CANNYEDGE_INTERNAL_ID)                                                                                           \
-{                                                                                                                          \
-    SystemGetTick(&env->func_systick_2, &env->func_loop_cnt_2);                                                            \
-    env->function_tick = (int32_t)(&env->func_loop_cnt_2-&env->func_loop_cnt_1)*CPU_CLK+((int32_t)&env->func_systick_1-(int32_t)&env->func_systick_2);\
-                                                                                                                           \
+#define CG_AFTER_NODE_EXECUTION(ID)                                                                \
+if ((ID) == ALGO_TO_BENCHMARK)                                                                     \
+{                                                                                                  \
+    uint32_t systick_2,loop_cnt_2;                                                                 \
+    SystemGetTick(&systick_2, &loop_cnt_2);                                                        \
+    env->function_tick = (loop_cnt_2-env->func_loop_cnt_1)*CPU_CLK+(env->func_systick_1-systick_2);\
 }
 #endif

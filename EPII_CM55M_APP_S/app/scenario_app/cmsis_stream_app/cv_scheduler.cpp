@@ -110,13 +110,13 @@ static uint8_t schedule[7]=
 Internal ID identification for the nodes
 
 */
-#define SENDRESULT_INTERNAL_ID 0
-#define CANNYEDGE_INTERNAL_ID 1
-#define GAUSSIANFILTER_INTERNAL_ID 2
-#define JPEGENCODER_INTERNAL_ID 3
-#define CAMERA_INTERNAL_ID 4
-#define YUVTOGRAY8_INTERNAL_ID 5
-#define GRAY8TORGB_INTERNAL_ID 6
+#define SERIAL_INTERNAL_ID 0
+#define CANNY_INTERNAL_ID 1
+#define GAUSSIAN_INTERNAL_ID 2
+#define JPEG_INTERNAL_ID 3
+#define OV5647_INTERNAL_ID 4
+#define TO_GRAY8_INTERNAL_ID 5
+#define TO_RGB_INTERNAL_ID 6
 
 /* For callback management */
 

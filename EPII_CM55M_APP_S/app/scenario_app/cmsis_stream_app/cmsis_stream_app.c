@@ -106,7 +106,7 @@ struct_fm_algoResult_with_fps  algoresult_fm;
 static uint32_t g_trans_type;
 static uint32_t judge_case_data;
 
-static stream_env_t stream_env;
+static stream_env_t stream_env={0};
 
 void app_start_state(APP_STATE_E state);
 void pinmux_init();
@@ -456,9 +456,7 @@ static void dp_app_cv_fd_fm_eventhdl_cb(EVT_INDEX_E event)
 	}
 	else if( g_trans_type == 1 || g_trans_type == 2)// transfer type is (SPI) or (UART & SPI) 
 	{
-		#if TOTAL_STEP_TICK
-			SystemGetTick(&stream_env->systick_1, &stream_env->loop_cnt_1);
-		#endif
+		
 		    int error;
 		    (void)cv_scheduler(&error,&stream_env,&algoresult, &algoresult_fm);
             
@@ -471,15 +469,7 @@ static void dp_app_cv_fd_fm_eventhdl_cb(EVT_INDEX_E event)
 		}
 #endif				
 
-		#if TOTAL_STEP_TICK						
-				SystemGetTick(&stream_env->systick_2, &stream_env->loop_cnt_2);
-
-			#if TOTAL_STEP_TICK_DBG_LOG
-					xprintf("Tick for TOTAL FD_FM:[%d]\r\n",(stream_env->loop_cnt_2-stream_env->loop_cnt_1)*CPU_CLK+(stream_env->systick_1-stream_env->systick_2));	
-
-			#endif	
-								
-		#endif
+	
 
 
 		#if FRAME_CHECK_DEBUG
@@ -487,9 +477,7 @@ static void dp_app_cv_fd_fm_eventhdl_cb(EVT_INDEX_E event)
 		#endif
 	}
 #else 
-	#if TOTAL_STEP_TICK
-			SystemGetTick(&stream_env->systick_1, &stream_env->loop_cnt_1);
-	#endif
+	
 		    int error;
 		    (void)cv_scheduler(&error,&stream_env,&algoresult, &algoresult_fm);
             
@@ -502,17 +490,7 @@ static void dp_app_cv_fd_fm_eventhdl_cb(EVT_INDEX_E event)
 		}
 #endif			
 
-	#if TOTAL_STEP_TICK						
-			SystemGetTick(&stream_env->systick_2, &stream_env->loop_cnt_2);
-
-		#if TOTAL_STEP_TICK_DBG_LOG
-				xprintf("Tick for TOTAL FD_FM:[%d]\r\n",(stream_env->loop_cnt_2-stream_env->loop_cnt_1)*CPU_CLK+(stream_env->systick_1-stream_env->systick_2));	
-
-		#endif	
-							
-	#endif
-
-
+	
 	#if FRAME_CHECK_DEBUG
 			hx_drv_spi_mst_protocol_write_sp((uint32_t)&algoresult_fm, sizeof(struct_fm_algoResult_with_fps), DATA_TYPE_META_FM_WITH_FPS_DATA);
 	#endif

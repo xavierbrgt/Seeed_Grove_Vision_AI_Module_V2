@@ -118,6 +118,7 @@ void draw() {
             text("ALL",PX,PY+DY);
             text(nf(currentduration,2,2) + " ms (" + nf(fps,2,1) + " fps)",PX+DX,PY+DY);
            
+            fps = 0;
             if (algoduration>0)
             {
                 fps = 1000.0 / algoduration;

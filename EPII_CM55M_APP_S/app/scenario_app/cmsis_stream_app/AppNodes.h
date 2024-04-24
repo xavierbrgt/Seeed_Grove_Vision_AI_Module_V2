@@ -214,10 +214,10 @@ public:
     {
         int8_t  *stream=this->getReadBuffer1();
         uint32_t  *l=this->getReadBuffer2();
+        uint32_t systick_2, loop_cnt_2;
 
-
-        SystemGetTick(&m_env->systick_2, &m_env->loop_cnt_2);
-        uint32_t algo_tick = (int32_t)(m_env->loop_cnt_2-m_env->loop_cnt_1)*CPU_CLK+((int32_t)m_env->systick_1-(int32_t)m_env->systick_2);              
+        SystemGetTick(&systick_2, &loop_cnt_2);
+        uint32_t algo_tick = (loop_cnt_2-m_env->loop_cnt_1)*CPU_CLK+(m_env->systick_1-systick_2);              
         algo_tick += m_env->capture_image_tick;   
 
     
