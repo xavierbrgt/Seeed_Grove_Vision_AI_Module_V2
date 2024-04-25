@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef WEB 
+
 extern "C" {
     extern uint8_t     g_frame_ready;
 };
@@ -120,3 +122,5 @@ public:
     };
 
 };
+
+#endif

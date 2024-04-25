@@ -23,11 +23,12 @@ height = image_t.height
 # Canny edge
 to_gray8 = YUVToGray8("to_gray8",width,height)
 gaussian = GaussianFilter("gaussian",width,height)
-#canny_edge = CannyEdge("canny",width,height)
-#to_rgb = Gray8ToRGB("to_rgb",width,height)
-#
-canny_edge = MVCannyEdge("canny",width,height)
-to_rgb = Gray16ToRGB("to_rgb",width,height)
+
+canny_edge = CannyEdge("canny",width,height)
+to_rgb = Gray8ToRGB("to_rgb",width,height)
+
+#canny_edge = MVCannyEdge("canny",width,height)
+#to_rgb = Gray16ToRGB("to_rgb",width,height)
 
 #
 

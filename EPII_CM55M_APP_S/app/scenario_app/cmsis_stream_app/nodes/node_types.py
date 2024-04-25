@@ -14,6 +14,7 @@ class CImageType(CGStaticType):
     RGB = 2
     GRAY16 = 3
     GRAY8 = 4
+    RGBA = 5
 
     def __init__(self,w,h,t=YUV):
         CGStaticType.__init__(self)
@@ -62,6 +63,8 @@ class CImageType(CGStaticType):
            return(int(2*self._w*self._h))
         if self._pixel_type == CImageType.GRAY8:
            return(int(self._w*self._h))
+        if self._pixel_type == CImageType.RGBA:
+           return(int(4*self._w*self._h))
 
     @property
     def ctype(self):
@@ -77,3 +80,5 @@ class CImageType(CGStaticType):
            return(escape(f"GRAY16_{self.width}_{self.height}"))
         if self.format == CImageType.GRAY8:
            return(escape(f"GRAY8_{self.width}_{self.height}"))
+        if self.format == CImageType.RGBA:
+           return(escape(f"RGBA_{self.width}_{self.height}"))

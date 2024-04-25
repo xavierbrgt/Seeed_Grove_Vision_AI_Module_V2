@@ -173,7 +173,7 @@ void arm_gaussian_filter_3x3_gray_in_u8_out_q15_proc_q15(const arm_image_gray_u8
 	}
 }
 //Gaussian filter in float16
-#if ((!defined(ARM_MATH_MVEI)) |(defined(FORCE_SCALAR)))
+#if ((!defined(ARM_MATH_MVEI)) ||(defined(FORCE_SCALAR)))
 //scalar version of the function
 //use a buffer to store the intermediate sum to limitate the repetition of calculation
 void arm_gaussian_filter_3x3_gray_in_u8_out_u8_proc_f16_buff(const arm_image_gray_u8_t* ImageIn, arm_image_gray_u8_t* ImageOut, arm_image_buff_f16_t* Img_tmp)
@@ -484,7 +484,7 @@ void arm_gaussian_filter_3x3_gray_in_u8_out_u8_proc_f16_buff(const arm_image_gra
 }
 #endif
 //gaussian fixed point q15
-#if ((!defined(ARM_MATH_MVEI)) |(defined(FORCE_SCALAR)))
+#if ((!defined(ARM_MATH_MVEI)) ||(defined(FORCE_SCALAR)))
 //scalar version
 void arm_gaussian_filter_3x3_gray_in_u8_out_q15_proc_q15_buff(const arm_image_gray_u8_t* ImageIn, arm_image_gray_q15_t* ImageOut, arm_image_gray_q15_t* Img_tmp)
 {

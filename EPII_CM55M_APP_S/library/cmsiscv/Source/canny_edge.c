@@ -307,7 +307,7 @@ void arm_hysteresis_in_f16_out_f16_proc_f16(const arm_image_sobel_f16_t* ImageIn
     }
 }
 
-#if ((!defined(ARM_MATH_MVEI)) |(defined(FORCE_SCALAR)))
+#if ((!defined(ARM_MATH_MVEI)) ||(defined(FORCE_SCALAR)))
 //Canny edge function for float16 scalar
 void arm_canny_edge_in_f16_out_u8_proc_f16(const arm_image_sobel_f16_t* ImageIn, arm_image_gray_u8_t* ImageOut)
 {
@@ -877,7 +877,7 @@ void arm_canny_edge_in_f16_out_u8_proc_f16(const arm_image_sobel_f16_t* ImageIn,
     }
 }
 #endif
-#if ((!defined(ARM_MATH_MVEI)) |(defined(FORCE_SCALAR)))
+#if ((!defined(ARM_MATH_MVEI)) ||(defined(FORCE_SCALAR)))
 //Canny edge function for q15 scalar
 void arm_canny_edge_in_out_q15_u8_proc_q15(const arm_image_sobel_q15_t* ImageIn, arm_image_gray_q15_t* ImageOut)
 {

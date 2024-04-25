@@ -20,24 +20,38 @@ public:
                 int w,int h):
     GenericNode<int8_t,inputSize,int8_t,outputSize>(src,dst),
     mW(w),mH(h){
+            mInitErrorOccured = false;
             img_tmp_grad1.numRows=3;
             img_tmp_grad1.numCols=w;
-            img_tmp_grad1.pData = (divergence_q15_t*) mm_reserve_align(2*3*w*sizeof(q15_t),0x20);
+            img_tmp_grad1.pData = (divergence_q15_t*) CG_MALLOC(2*3*w*sizeof(q15_t));
+            if (img_tmp_grad1.pData == nullptr)
+            {
+                mInitErrorOccured = true;
+            }
 
             img_tmp_grad2.numRows=3;
             img_tmp_grad2.numCols=w;
-            img_tmp_grad2.pData = (divergence_q15_t*)mm_reserve_align(2*3*w*sizeof(q15_t),0x20);
+            img_tmp_grad2.pData = (divergence_q15_t*)CG_MALLOC(2*3*w*sizeof(q15_t));
+            if (img_tmp_grad2.pData == nullptr)
+            {
+                mInitErrorOccured = true;
+            }
 
             img_tmp.numRows=3;
             img_tmp.numCols=w;
-            img_tmp.pData = (q15_t*)mm_reserve_align(3*w*sizeof(q15_t),0x20);
+            img_tmp.pData = (q15_t*)CG_MALLOC(3*w*sizeof(q15_t));
+
+            if (img_tmp.pData == nullptr)
+            {
+                mInitErrorOccured = true;
+            }
     };
 
     ~CannyEdge()
     {
-       //free(img_tmp_grad1.pData);
-       //free(img_tmp_grad2.pData);
-       //free(img_tmp.pData);
+       CG_FREE(img_tmp_grad1.pData);
+       CG_FREE(img_tmp_grad2.pData);
+       CG_FREE(img_tmp.pData);
     }
 
     /* In asynchronous mode, node execution will be 
@@ -62,6 +76,11 @@ public:
     int run() final{
         int8_t *i=this->getReadBuffer();
         int8_t *o=this->getWriteBuffer();
+
+        if (mInitErrorOccured)
+        {
+            return(CG_MEMORY_ALLOCATION_FAILURE);
+        }
 
         arm_image_gray_q15_t input;
         arm_image_gray_q15_t output;
@@ -89,6 +108,7 @@ protected:
     arm_buffer_2_q15_t img_tmp_grad1;
     arm_buffer_2_q15_t img_tmp_grad2;
     arm_image_gray_q15_t img_tmp;
+    bool mInitErrorOccured;
 };
 
 template<typename IN, int inputSize,
@@ -109,15 +129,16 @@ public:
     GenericNode<int8_t,inputSize,int8_t,outputSize>(src,dst),
     mW(w),mH(h){
             
-            gm = (gvec_t*) mm_reserve_align(w*sizeof(gvec_t),0x20);
-            buffer = (int*)mm_reserve_align(2*w*sizeof(int),0x20);
+            gm = (gvec_t*) CG_MALLOC(w*sizeof(gvec_t));
+            buffer = (int*)CG_MALLOC(2*w*sizeof(int));
 
            
     };
 
     ~MVCannyEdge()
     {
-
+        CG_FREE(gm);
+        CG_FREE(buffer);
     }
 
     /* In asynchronous mode, node execution will be 

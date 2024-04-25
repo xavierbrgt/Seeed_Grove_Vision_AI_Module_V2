@@ -3,7 +3,7 @@
 #include "canny_edge.h"
 
 
-#if ((!defined(ARM_MATH_MVEI)) |(defined(FORCE_SCALAR)))
+#if ((!defined(ARM_MATH_MVEI)) ||(defined(FORCE_SCALAR)))
 //function performing canny edge on an image where a gaussian filter has been applied
 //this function uses three buffers, one for storing intermediate values for computing the gradient, one for storing the gradient and one for storing the magnitude conputed with the gradient
 //exept the buffer for the magnitude, the buffer have two component
@@ -176,7 +176,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 						{
 							if(Img_tmp_mag->pData[((x-3)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-3)%3) * (ImageIn->numCols)+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-3)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold)||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold))
 							{
-								ImageOut->pData[indice] = 255;
+								ImageOut->pData[indice] = 0x7FFF;
 								continue;
 							}
 							else
@@ -187,7 +187,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 						}
 						else
 						{
-							ImageOut->pData[indice] = 255;
+							ImageOut->pData[indice] = 0x7FFF;
 							continue;
 						}
 					}
@@ -243,7 +243,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 							{
 								if (Img_tmp_mag->pData[((x-3)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-3)%3) * (ImageIn->numCols)+y]>=(int)(high_threshold)||Img_tmp_mag->pData[((x-2)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-2)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold)||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold))
 								{
-									ImageOut->pData[indice] = 255;
+									ImageOut->pData[indice] = 0x7FFF;
 									continue;
 								}
 								else
@@ -254,7 +254,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 							}
 							else
 							{
-								ImageOut->pData[indice] = 255;
+								ImageOut->pData[indice] = 0x7FFF;
 								continue;
 							}
 						}
@@ -274,7 +274,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 						{
 							if (Img_tmp_mag->pData[((x-3)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold)||Img_tmp_mag->pData[((x-3)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-2)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-2)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold)||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold))
 							{
-								ImageOut->pData[indice] = 255;
+								ImageOut->pData[indice] = 0x7FFF;
 								continue;
 							}
 							else
@@ -285,7 +285,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 						}
 						else
 						{
-							ImageOut->pData[indice] = 255;
+							ImageOut->pData[indice] = 0x7FFF;
 							continue;
 						}
 					}
@@ -336,7 +336,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 							{
 								if (Img_tmp_mag->pData[((x-3)%3) * (ImageIn->numCols)+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-3)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-2)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-2)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold))
 								{
-									ImageOut->pData[indice] = 255;
+									ImageOut->pData[indice] = 0x7FFF;
 									continue;
 								}
 								else
@@ -347,7 +347,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 							}
 							else
 							{
-								ImageOut->pData[indice] = 255;
+								ImageOut->pData[indice] = 0x7FFF;
 								continue;
 							}
 						}
@@ -367,7 +367,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 						{
 							if(Img_tmp_mag->pData[((x-3)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-3)%3) * (ImageIn->numCols)+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-3)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold)||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold))
 							{
-								ImageOut->pData[indice] = 255;
+								ImageOut->pData[indice] = 0x7FFF;
 								continue;
 							}
 							else
@@ -378,7 +378,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 						}
 						else
 						{
-							ImageOut->pData[indice] = 255;
+							ImageOut->pData[indice] = 0x7FFF;
 							continue;
 						}
 					}
@@ -428,7 +428,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 					{
 						if(Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold))
 						{
-							ImageOut->pData[indice] = 255;
+							ImageOut->pData[indice] = 0x7FFF;
 							continue;
 						}
 						else
@@ -439,7 +439,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 					}
 					else
 					{
-						ImageOut->pData[indice] = 255;
+						ImageOut->pData[indice] = 0x7FFF;
 						continue;
 					}
 				}
@@ -490,7 +490,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 						{
 							if (Img_tmp_mag->pData[((x-2)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-2)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold)||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold))
 							{
-								ImageOut->pData[indice] = 255;
+								ImageOut->pData[indice] = 0x7FFF;
 								continue;
 							}
 							else
@@ -501,7 +501,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 						}
 						else
 						{
-							ImageOut->pData[indice] = 255;
+							ImageOut->pData[indice] = 0x7FFF;
 							continue;
 						}
 					}
@@ -521,7 +521,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 					{
 						if (Img_tmp_mag->pData[((x-2)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-2)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold)||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold))
 						{
-							ImageOut->pData[indice] = 255;
+							ImageOut->pData[indice] = 0x7FFF;
 							continue;
 						}
 						else
@@ -532,7 +532,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 					}
 					else
 					{
-						ImageOut->pData[indice] = 255;
+						ImageOut->pData[indice] = 0x7FFF;
 						continue;
 					}
 				}
@@ -583,7 +583,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 						{
 							if (Img_tmp_mag->pData[((x-2)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-2)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold))
 							{
-								ImageOut->pData[indice] = 255;
+								ImageOut->pData[indice] = 0x7FFF;
 								continue;
 							}
 							else
@@ -594,7 +594,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 						}
 						else
 						{
-							ImageOut->pData[indice] = 255;
+							ImageOut->pData[indice] = 0x7FFF;
 							continue;
 						}
 					}
@@ -614,7 +614,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 					{
 						if(Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[((x-1)%3) * (ImageIn->numCols)+y-1]>=(int)(high_threshold))
 						{
-							ImageOut->pData[indice] = 255;
+							ImageOut->pData[indice] = 0x7FFF;
 							continue;
 						}
 						else
@@ -625,7 +625,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 					}
 					else
 					{
-						ImageOut->pData[indice] = 255;
+						ImageOut->pData[indice] = 0x7FFF;
 						continue;
 					}
 				}
@@ -1069,7 +1069,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 							{
 								if(Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y-1+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+1+j]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold))
 								{
-									vect_out[j] = 255;
+									vect_out[j] = 0x7FFF;
 									continue;
 								}
 								else
@@ -1080,7 +1080,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 							}
 							else
 							{
-								vect_out[j] = 255;
+								vect_out[j] = 0x7FFF;
 								continue;
 							}
 						}
@@ -1131,7 +1131,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 								{
 									if (Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-2)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-2)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold))
 									{
-										vect_out[j] = 255;
+										vect_out[j] = 0x7FFF;
 										continue;
 									}
 									else
@@ -1142,7 +1142,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 								}
 								else
 								{
-									vect_out[j] = 255;
+									vect_out[j] = 0x7FFF;
 									continue;
 								}
 							}
@@ -1163,7 +1163,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 							{
 								if (Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-2)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-2)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold))
 								{
-									vect_out[j] = 255;
+									vect_out[j] = 0x7FFF;
 									continue;
 								}
 								else
@@ -1174,7 +1174,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 							}
 							else
 							{
-								vect_out[j] = 255;
+								vect_out[j] = 0x7FFF;
 								continue;
 							}
 						}
@@ -1225,7 +1225,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 								{
 									if (Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-2)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-2)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold))
 									{
-										vect_out[j] = 255;
+										vect_out[j] = 0x7FFF;
 										continue;
 									}
 									else
@@ -1236,7 +1236,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 								}
 								else
 								{
-									vect_out[j] = 255;
+									vect_out[j] = 0x7FFF;
 									continue;
 								}
 							}
@@ -1256,7 +1256,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 							{
 								if(Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold))
 								{
-									vect_out[j] = 255;
+									vect_out[j] = 0x7FFF;
 									continue;
 								}
 								else
@@ -1267,7 +1267,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 							}
 							else
 							{
-								vect_out[j] = 255;
+								vect_out[j] = 0x7FFF;
 								continue;
 							}
 						}
@@ -1310,7 +1310,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 {
                                     if(Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y-1]>=(int)(high_threshold))
                                     {
-                                        ImageOut->pData[indice] = 255;
+                                        ImageOut->pData[indice] = 0x7FFF;
                                     	continue;
 									}
                                     else
@@ -1321,7 +1321,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 								}
                                 else
                                 {
-                                    ImageOut->pData[indice] = 255;
+                                    ImageOut->pData[indice] = 0x7FFF;
                                 	continue;
 								}
                             }
@@ -1372,7 +1372,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                     {
                                         if (Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y]>=(int)(high_threshold)||Img_tmp_mag->pData[indicepcent-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent+1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y-1]>=(int)(high_threshold))
                                         {
-                                            ImageOut->pData[indice] = 255;
+                                            ImageOut->pData[indice] = 0x7FFF;
                                         	continue;
 										}
                                         else
@@ -1383,7 +1383,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                     }
                                     else
                                     {
-                                        ImageOut->pData[indice] = 255;
+                                        ImageOut->pData[indice] = 0x7FFF;
                                     	continue;
 									}
                                 }
@@ -1403,7 +1403,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 {
                                     if (Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y-1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y-1]>=(int)(high_threshold))
                                     {
-                                        ImageOut->pData[indice] = 255;
+                                        ImageOut->pData[indice] = 0x7FFF;
 										continue;
 									}
                                     else
@@ -1414,7 +1414,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 }
                                 else
                                 {
-                                    ImageOut->pData[indice] = 255;
+                                    ImageOut->pData[indice] = 0x7FFF;
 									continue;
 								}
                             }
@@ -1465,7 +1465,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                     {
                                         if (Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y-1]>=(int)(high_threshold))
                                         {
-                                            ImageOut->pData[indice] = 255;
+                                            ImageOut->pData[indice] = 0x7FFF;
                                         	continue;
 										}
                                         else
@@ -1476,7 +1476,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                     }
                                     else
                                     {
-                                        ImageOut->pData[indice] = 255;
+                                        ImageOut->pData[indice] = 0x7FFF;
                                     	continue;
 									}
                                 }
@@ -1496,7 +1496,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 {
                                     if(Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y-1]>=(int)(high_threshold))
                                     {
-                                        ImageOut->pData[indice] = 255;
+                                        ImageOut->pData[indice] = 0x7FFF;
                                     	continue;
 									}
                                     else
@@ -1507,7 +1507,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 }
                                 else
                                 {
-                                    ImageOut->pData[indice] = 255;
+                                    ImageOut->pData[indice] = 0x7FFF;
                                 	continue;
 								}
                             }
@@ -1566,7 +1566,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 {
                                     if(Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y-1+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+1+j]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold))
                                     {
-                                        vect_out[j] = 255;
+                                        vect_out[j] = 0x7FFF;
                                     	continue;
 									}
                                     else
@@ -1577,7 +1577,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 								}
                                 else
                                 {
-                                    vect_out[j] = 255;
+                                    vect_out[j] = 0x7FFF;
                                 	continue;
 								}
                             }
@@ -1628,7 +1628,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                     {
                                         if (Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j]>=(int)(high_threshold)||Img_tmp_mag->pData[indicepcent+j-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent+j+1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold))
                                         {
-                                            vect_out[j] = 255;
+                                            vect_out[j] = 0x7FFF;
                                         	continue;
 										}
                                         else
@@ -1639,7 +1639,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                     }
                                     else
                                     {
-                                        vect_out[j] = 255;
+                                        vect_out[j] = 0x7FFF;
                                     	continue;
 									}
                                 }
@@ -1659,7 +1659,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 {
                                     if (Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent+j-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent+j+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold))
                                     {
-                                        vect_out[j] = 255;
+                                        vect_out[j] = 0x7FFF;
                                     	continue;
 									}
                                     else
@@ -1670,7 +1670,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 }
                                 else
                                 {
-                                    vect_out[j] = 255;
+                                    vect_out[j] = 0x7FFF;
                                 	continue;
 								}
                             }   
@@ -1721,7 +1721,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                     {
                                         if (Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent+j-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent+j+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold))
                                         {
-                                            vect_out[j] = 255;
+                                            vect_out[j] = 0x7FFF;
                                         	continue;
 										}
                                         else
@@ -1732,7 +1732,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                     }
                                     else
                                     {
-                                        vect_out[j] = 255;
+                                        vect_out[j] = 0x7FFF;
                                     	continue;
 									}
                                 }
@@ -1752,7 +1752,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 {
                                     if(Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+j-1]>=(int)(high_threshold))
                                     {
-                                        vect_out[j] = 255;
+                                        vect_out[j] = 0x7FFF;
                                     	continue;
 									}
                                     else
@@ -1763,7 +1763,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 }
                                 else
                                 {
-                                    vect_out[j] = 255;
+                                    vect_out[j] = 0x7FFF;
                                 	continue;
 								}
                             }   
@@ -1811,7 +1811,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 {
                                     if(Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y-1]>=(int)(high_threshold))
                                     {
-                                        ImageOut->pData[indice] = 255;
+                                        ImageOut->pData[indice] = 0x7FFF;
                                     	continue;
 									}
                                     else
@@ -1822,7 +1822,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 								}
                                 else
                                 {
-                                    ImageOut->pData[indice] = 255;
+                                    ImageOut->pData[indice] = 0x7FFF;
                                 	continue;
 								}
                             }
@@ -1873,7 +1873,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                     {
                                         if (Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y]>=(int)(high_threshold)||Img_tmp_mag->pData[indicepcent-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent+1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y-1]>=(int)(high_threshold))
                                         {
-                                            ImageOut->pData[indice] = 255;
+                                            ImageOut->pData[indice] = 0x7FFF;
                                         	continue;
 										}
                                         else
@@ -1884,7 +1884,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                     }
                                     else
                                     {
-                                        ImageOut->pData[indice] = 255;
+                                        ImageOut->pData[indice] = 0x7FFF;
                                     	continue;
 									}
                                 }
@@ -1905,7 +1905,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 {
                                     if (Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y-1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y-1]>=(int)(high_threshold))
                                     {
-                                        ImageOut->pData[indice] = 255;
+                                        ImageOut->pData[indice] = 0x7FFF;
 										continue;
 									}
                                     else
@@ -1916,7 +1916,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 }
                                 else
                                 {
-                                    ImageOut->pData[indice] = 255;
+                                    ImageOut->pData[indice] = 0x7FFF;
 									continue;
 								}
                             }   
@@ -1967,7 +1967,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                     {
                                         if (Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[indicepcent+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y-1]>=(int)(high_threshold))
                                         {
-                                            ImageOut->pData[indice] = 255;
+                                            ImageOut->pData[indice] = 0x7FFF;
                                         	continue;
 										}
                                         else
@@ -1978,7 +1978,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                     }
                                     else
                                     {
-                                        ImageOut->pData[indice] = 255;
+                                        ImageOut->pData[indice] = 0x7FFF;
                                     	continue;
 									}
                                 }
@@ -1999,7 +1999,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 {
                                     if(Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y-1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-3)%3*ImageIn->numCols+y+1]>=(int)(high_threshold)||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y+1]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y]>=(int)(high_threshold) ||Img_tmp_mag->pData[(x-1)%3*ImageIn->numCols+y-1]>=(int)(high_threshold))
                                     {
-                                        ImageOut->pData[indice] = 255;
+                                        ImageOut->pData[indice] = 0x7FFF;
                                     	continue;
 									}
                                     else
@@ -2010,7 +2010,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
                                 }
                                 else
                                 {
-                                    ImageOut->pData[indice] = 255;
+                                    ImageOut->pData[indice] = 0x7FFF;
                                 	continue;
 								}
                             }   
