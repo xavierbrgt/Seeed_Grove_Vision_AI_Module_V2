@@ -128,9 +128,19 @@ public:
                 int w,int h):
     GenericNode<int8_t,inputSize,int8_t,outputSize>(src,dst),
     mW(w),mH(h){
-            
-            gm = (gvec_t*) CG_MALLOC(w*sizeof(gvec_t));
+
+            mInitErrorOccured = false;
+            gm = (gvec_t*) CG_MALLOC(h*w*sizeof(gvec_t));
+            if (gm == nullptr)
+            {
+                mInitErrorOccured = true;
+            }
+
             buffer = (int*)CG_MALLOC(2*w*sizeof(int));
+            if (buffer == nullptr)
+            {
+                mInitErrorOccured = true;
+            }
 
            
     };
@@ -164,13 +174,22 @@ public:
         int8_t *i=this->getReadBuffer();
         int8_t *o=this->getWriteBuffer();
 
+        if (mInitErrorOccured)
+        {
+            return(CG_MEMORY_ALLOCATION_FAILURE);
+        }
+
         arm_matrix_instance_q15 io;
 
         io.numRows=mH;
         io.numCols=mW;
         io.pData = (q15_t*)o;
 
-        rectangle_t roi={0,0,(int16_t)mW,(int16_t)mH};
+        rectangle_t roi;
+        roi.x= 0;
+        roi.y = 0;
+        roi.w = mW;
+        roi.h = mH;
 
       
         memcpy(o,i,sizeof(q15_t)*mW*mH);
@@ -192,4 +211,6 @@ protected:
     int mW,mH;
     gvec_t *gm;
     int *buffer;
+    bool mInitErrorOccured;
+
 };
