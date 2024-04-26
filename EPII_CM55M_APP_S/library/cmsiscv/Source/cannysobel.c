@@ -9,10 +9,16 @@
 //exept the buffer for the magnitude, the buffer have two component
 //the purpose of this function is to avoid repetition of compute by storing the intermediate part of the compute and by fusing the end of canny edge and sobel
 //to avoid repetition of condition for the end of the canny edge
-void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* ImageIn, arm_image_gray_q15_t* ImageOut, arm_buffer_2_q15_t* Img_tmp_grad/*4*/, arm_image_gray_q15_t* Img_tmp_mag/*3*/, arm_buffer_2_q15_t* Img_tmp_temporary/*3*/)
+void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* ImageIn, 
+                                                 arm_image_gray_q15_t* ImageOut, 
+                                                 arm_buffer_2_q15_t* Img_tmp_grad/*4*/, 
+                                                 arm_image_gray_q15_t* Img_tmp_mag/*3*/, 
+                                                 arm_buffer_2_q15_t* Img_tmp_temporary/*3*/,
+                                                 int low_threshold,
+                                                 int high_threshold)
 {
-	int low_threshold = (int)(2528);
-    int high_threshold = (int)(5728);
+	//low_threshold = (int)(2528);
+    //int high_threshold = (int)(5728);
 	int indice;	
 	q63_t gradx;
 	q63_t grady;

@@ -14,6 +14,7 @@ class CannyEdge(GenericNode):
         self.addOutput("o",dst_t,dst_t._nb_bytes)
         self.addLiteralArg(w)
         self.addLiteralArg(h)
+        self.addVariableArg("params")
         
     @property
     def typeName(self):
@@ -31,6 +32,7 @@ class MVCannyEdge(GenericNode):
         self.addOutput("o",dst_t,dst_t._nb_bytes)
         self.addLiteralArg(w)
         self.addLiteralArg(h)
+        self.addVariableArg("params")
         
     @property
     def typeName(self):

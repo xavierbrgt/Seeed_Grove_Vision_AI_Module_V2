@@ -17,9 +17,10 @@ public:
     /* Constructor needs the input and output FIFOs */
     CannyEdge(FIFOBase<int8_t> &src,
                 FIFOBase<int8_t> &dst,
-                int w,int h):
+                int w,int h,
+                uint32_t *params):
     GenericNode<int8_t,inputSize,int8_t,outputSize>(src,dst),
-    mW(w),mH(h){
+    mW(w),mH(h),mParams(params){
             mInitErrorOccured = false;
             img_tmp_grad1.numRows=3;
             img_tmp_grad1.numCols=w;
@@ -98,7 +99,9 @@ public:
                                                  &output, 
                                                  &img_tmp_grad1, 
                                                  &img_tmp, 
-                                                 &img_tmp_grad2);
+                                                 &img_tmp_grad2,
+                                                 mParams[0], 
+                                                 mParams[1]);
        
         
         return(0);
@@ -109,6 +112,7 @@ protected:
     arm_buffer_2_q15_t img_tmp_grad2;
     arm_image_gray_q15_t img_tmp;
     bool mInitErrorOccured;
+    uint32_t *mParams;
 };
 
 template<typename IN, int inputSize,
@@ -125,9 +129,10 @@ public:
     /* MVCannyEdge needs the input and output FIFOs */
     MVCannyEdge(FIFOBase<int8_t> &src,
                 FIFOBase<int8_t> &dst,
-                int w,int h):
+                int w,int h,
+                uint32_t *params):
     GenericNode<int8_t,inputSize,int8_t,outputSize>(src,dst),
-    mW(w),mH(h){
+    mW(w),mH(h),mParams(params){
 
             mInitErrorOccured = false;
             gm = (gvec_t*) CG_MALLOC(h*w*sizeof(gvec_t));
@@ -194,13 +199,10 @@ public:
       
         memcpy(o,i,sizeof(q15_t)*mW*mH);
 
-        int low_thresh = (int)(0.3*255);
-        int high_thresh = (int)(0.7*255);
-
-       
+        //printf("%d : %d\n",mParams[0],mParams[1]);
         imlib_edge_canny(&io,&roi, 
-                             low_thresh, 
-                             high_thresh, 
+                             mParams[0]/*low_thresh*/, 
+                             mParams[1]/*high_thresh*/, 
                              gm, 
                              buffer);
        
@@ -212,5 +214,5 @@ protected:
     gvec_t *gm;
     int *buffer;
     bool mInitErrorOccured;
-
+    uint32_t *mParams;
 };

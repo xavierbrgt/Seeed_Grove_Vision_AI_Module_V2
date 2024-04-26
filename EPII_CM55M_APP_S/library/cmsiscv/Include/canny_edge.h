@@ -87,7 +87,9 @@ extern void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15
                                                  arm_image_gray_q15_t* ImageOut, 
                                                  arm_buffer_2_q15_t* Img_tmp_grad/*4*/, 
                                                  arm_image_gray_q15_t* Img_tmp_mag/*3*/, 
-                                                 arm_buffer_2_q15_t* Img_tmp_temporary/*3*/);
+                                                 arm_buffer_2_q15_t* Img_tmp_temporary/*3*/,
+                                                 int low_threshold,
+                                                 int high_threshold);
 
 #ifdef   __cplusplus
 }
