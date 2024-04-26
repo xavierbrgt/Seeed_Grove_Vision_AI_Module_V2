@@ -5,7 +5,7 @@ from html import escape
 from .node_types import *
 
 class CannyEdge(GenericNode):
-    def __init__(self,name,w,h):
+    def __init__(self,name,w,h,firstAlgo=True):
         GenericSink.__init__(self,name)
         src_t = CImageType(w,h,CImageType.GRAY16)
         dst_t = CImageType(w,h,CImageType.GRAY16)
@@ -14,7 +14,10 @@ class CannyEdge(GenericNode):
         self.addOutput("o",dst_t,dst_t._nb_bytes)
         self.addLiteralArg(w)
         self.addLiteralArg(h)
-        self.addVariableArg("params")
+        if firstAlgo:
+           self.addVariableArg("params1")
+        else:
+           self.addVariableArg("params2")
         
     @property
     def typeName(self):
