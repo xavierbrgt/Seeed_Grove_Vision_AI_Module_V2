@@ -15,14 +15,29 @@ class CannyEdge(GenericNode):
         self.addLiteralArg(w)
         self.addLiteralArg(h)
         if firstAlgo:
+           self._paramBlock = 1
            self.addVariableArg("params1")
         else:
+           self._paramBlock = 2
            self.addVariableArg("params2")
         
     @property
     def typeName(self):
         """The name of the C++ class implementing this node"""
         return "CannyEdge"
+
+    @property
+    def paramBlock(self):
+        return self._paramBlock
+
+    @property
+    def params(self):
+        return {"name":"CMSIS-CV Canny Edge", 
+                "values":
+                  [{"value":2500,"name":"low","min":0,"max":3000,"step":10},
+                   {"value":1060,"name":"high","min":0,"max":4500,"step":10}
+                  ]
+                }
 
 
 class MVCannyEdge(GenericNode):
