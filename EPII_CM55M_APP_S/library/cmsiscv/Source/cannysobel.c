@@ -394,7 +394,7 @@ void arm_canny_edge_sobel_in_q15_out_u8_proc_q15(const arm_image_gray_q15_t* Ima
 		}
 	}
 	//last line of the outup image to be computed the conditions are simpler because we know that the last line of the image is 0, such as the gradient and magnitude for this line
-	int x = ImageIn->numRows;
+	x = ImageIn->numRows;
 	for( int y =1; y < ImageIn->numCols-1; y++)
 	{
 		
